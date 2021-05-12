@@ -1,0 +1,121 @@
+{% extends 'shared/layout.html' %}
+{% block title %}
+Resident Information
+{% endblock %}
+
+{% block css %}{% endblock %}
+
+{% block content %}
+<div class="main-content" id="panel">
+    <!-- Header -->
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <p class="display-2 text-white d-inline-block mb-0">Account Information</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header border-1">
+                        <h4 class="card-title">Profile | Basic Info</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">First Name</label>
+                                            <input type="text" class="form-control" value="{{data.first_name}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Middle Name</label>
+                                            <input type="text" class="form-control" value="{{data.middle_name}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Last Name</label>
+                                            <input type="text" class="form-control" value="{{data.last_name}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Birthdate</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ data.birth_date.strftime('%m/%d/%Y') if data.birth_date is not none else None }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Gender</label>
+                                            <input type="text" class="form-control" value="{{data.gender}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Civil Status</label>
+                                            <input type="text" class="form-control" value="{{data.civil}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Email</label>
+                                            <input type="text" class="form-control" value="{{data.email}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Phone</label>
+                                            <input type="text" class="form-control" value="{{data.phone}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Position</label>
+                                            <input type="text" class="form-control" value="{{data.position}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Address</label>
+                                            <input type="text" class="form-control" value="{{data.address}}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    setSideBar('#menu-accounts')
+
+</script>
+{% endblock %}

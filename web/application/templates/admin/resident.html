@@ -1,0 +1,479 @@
+{% extends 'shared/layout.html' %}
+{% block title %}
+Resident Information
+{% endblock %}
+
+{% block css %}{% endblock %}
+
+{% block modal %}
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content card bg-secondary shadow">
+            <div class="modal-header card-header bg-white border-0">
+                <h4 class="card-title">Resident Information</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body card-body">
+                <div class="row">
+                    <input id="id" name="id" type="text" class="form-control " hidden value="-1">
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Roles <span id="role_id_error"
+                                    class="h5 text-danger"></span></label>
+                            <select id="role_id" name="role_id" data-style="bg-white px-4 py-3 shadow-sm"
+                                class="form-control  selectpicker" data-live-search="true">
+                                <option value="3" selected>Patient (Resident)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">First Name <span id="first_name_error"
+                                    class="h5 text-danger"></span></label>
+                            <input id="first_name" name="first_name" type="text"
+                                class="form-control ">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Middle Name</label>
+                            <input id="middle_name" name="middle_name" type="text"
+                                class="form-control ">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Last Name <span id="last_name_error"
+                                    class="h5 text-danger"></span></label>
+                            <input id="last_name" name="last_name" type="text"
+                                class="form-control ">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Email <span id="email_error"
+                                    class="h5 text-danger"></span></label>
+                            <input id="email" name="email" type="text" class="form-control ">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Phone <span id="phone_error"
+                                    class="h5 text-danger"></span></label>
+                            <input id="phone" name="phone" type="text" class="form-control ">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Password <span style="font-weight: 100">(leave blank to
+                                    remain unchanged)</span> <span id="password_error"
+                                    class="h5 text-danger"></span></label>
+                            <input id="password" name="password" name="password" type="password"
+                                class="form-control ">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Birthdate</label>
+                            <input id="birth_date" name="birth_date" type="text"
+                                class="form-control  datepicker">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Gender</label>
+                            <select id="gender" name="gender" data-style="bg-white px-4 py-3 shadow-sm"
+                                class="form-control  selectpicker" data-live-search="true">
+                                <option value="Male">Male</option>
+                                <option value="Female">Female</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Civil Status</label>
+                            <select id="civil" name="civil" data-style="bg-white px-4 py-3 shadow-sm"
+                                class="form-control  selectpicker" data-live-search="true">
+                                <option value="Single">Single</option>
+                                <option value="Married">Married</option>
+                                <option value="Separated">Separated</option>
+                                <option value="Widowed">Widowed</option>
+                                <option value="Widower">Widower</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Address <span id="address_error"
+                                    class="h5 text-danger"></span></label>
+                            <input id="address" name="address" type="text"
+                                class="form-control ">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-success" onclick="Save()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="main-content" id="panel">
+    <!-- Header -->
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <p class="display-2 text-white d-inline-block mb-0">Resident Information</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h4 class="card-title">Filed Cases</h4>
+                    </div>
+                    <div class="table-responsive">
+                        <!-- Projects table -->
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Status</th>
+                                    <th scope="col">Title</th>
+                                    <th scope="col">Date Filed</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in data.record_patient %}
+                                <tr>
+                                    <th scope="row">
+                                        {{record.status.status}}
+                                    </th>
+                                    <td>
+                                        {{record.case_title}}
+                                    </td>
+                                    <td>
+                                        {{record.date_reported.strftime('%h %d %Y')}}
+                                    </td>
+                                    <td>
+                                        <a href="/admin/record/{{record.id}}" class="btn btn-sm btn-info"><i class="fa fa-eye"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h4 class="card-title">Appointments</h4>
+                    </div>
+                    <div class="table-responsive">
+                        <!-- Projects table -->
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Case Title</th>
+                                    <th scope="col">Date of Hearing</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in data.record_patient %}
+                                    {% for appointment in record.records_appointments %}
+                                        <tr>
+                                            <th scope="row">
+                                                {{appointment.record.case_title}} ({{appointment.record.status.status}})
+                                            </th>
+                                            <td>
+                                                {{appointment.appointment.strftime('%h %d %Y')}}
+                                            </td>
+                                            <td>
+                                                <a href="/admin/appointment/{{appointment.id}}" class="btn btn-sm btn-info"><i class="fa fa-eye"></i></a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div><div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header border-1">
+                        <h4 class="card-title">Profile | Basic Info</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">First Name</label>
+                                            <input type="text" class="form-control" value="{{data.first_name}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Middle Name</label>
+                                            <input type="text" class="form-control" value="{{data.middle_name}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Last Name</label>
+                                            <input type="text" class="form-control" value="{{data.last_name}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Birthdate</label>
+                                            <input type="text" class="form-control"
+                                                value="{{ data.birth_date.strftime('%m/%d/%Y') if data.birth_date is not none else None }}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Gender</label>
+                                            <input type="text" class="form-control" value="{{data.gender}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Civil Status</label>
+                                            <input type="text" class="form-control" value="{{data.civil}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Email</label>
+                                            <input type="text" class="form-control" value="{{data.email}}">
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Phone</label>
+                                            <input type="text" class="form-control" value="{{data.phone}}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="form-group">
+                                            <label class="form-control-label">Address</label>
+                                            <input type="text" class="form-control" value="{{data.address}}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    setSideBar('#menu-residents')
+
+    var modal = '#modal-default'
+
+    var AddNew = function () {
+
+        $('#first_name_error').html('')
+        $('#last_name_error').html('')
+        $('#phone_error').html('')
+        $('#email_error').html('')
+        $('#password_error').html('')
+        $('#address_error').html('')
+
+        $('#id').val('-1')
+        $('#first_name').val('')
+        $('#middle_name').val('')
+        $('#last_name').val('')
+        $('#email').val('')
+        $('#phone').val('')
+        $('#password').val('')
+        $('#birth_date').val('')
+        $('#address').val('')
+
+        $(".selectpicker").selectpicker('deselectAll');
+        $(".selectpicker").selectpicker('val', []);
+
+        $(modal).modal({
+            "backdrop": "static",
+            "keyboard": true,
+            "show": true
+        })
+
+    }
+
+    var Save = function () {
+
+        data = {
+            'id': $('#id').val(),
+            'role_id': $('#role_id').val(),
+            'first_name': $('#first_name').val(),
+            'middle_name': $('#middle_name').val(),
+            'last_name': $('#last_name').val(),
+            'email': $('#email').val(),
+            'phone': $('#phone').val(),
+            'gender': $('#gender').val(),
+            'civil': $('#civil').val(),
+            'password': $('#password').val(),
+            'birth_date': $('#birth_date').val(),
+            'address': $('#address').val(),
+            'position': null
+        }
+
+        $('#role_id_error').html('')
+        $('#first_name_error').html('')
+        $('#last_name_error').html('')
+        $('#phone_error').html('')
+        $('#email_error').html('')
+        $('#password_error').html('')
+        $('#address_error').html('')
+
+        Controller.POST('/api/account/upsert', data).done(function (result) {
+            console.log(result)
+            if (result.success == true) {
+                e = document.getElementById('account-' + data.id)
+                if (e == null) {
+                    location.reload()
+                }
+                else {
+                    e.childNodes[1].innerHTML = data.first_name + ' ' + data.middle_name + ' ' + data.last_name
+                    e.childNodes[3].innerHTML = data.address
+                    e.childNodes[5].innerHTML = data.email
+                    e.childNodes[7].innerHTML = data.phone
+                    e.childNodes[9].innerHTML = 'Registered'
+                    $(modal).modal('hide')
+                }
+            }
+            else {
+
+                if (result.errors.role_id) $('#role_id_error').html(result.errors.role_id)
+                if (result.errors.first_name) $('#first_name_error').html(result.errors.first_name)
+                if (result.errors.last_name) $('#last_name_error').html(result.errors.last_name)
+                if (result.errors.phone) $('#phone_error').html(result.errors.phone)
+                if (result.errors.email) $('#email_error').html(result.errors.email)
+                if (result.errors.password) $('#password_error').html(result.errors.password)
+                if (result.errors.address) $('#address_error').html(result.errors.address)
+
+            }
+        })
+
+    }
+
+    var Edit = function (e) {
+
+        $('#role_id_error').html('')
+        $('#first_name_error').html('')
+        $('#last_name_error').html('')
+        $('#phone_error').html('')
+        $('#email_error').html('')
+        $('#password_error').html('')
+        $('#address_error').html('')
+
+        id = e.parentNode.parentNode.dataset.id
+
+        Controller.GET('/api/account/get/' + id, {}).done(function (result) {
+
+            $('#id').val(result.id)
+            $('#role_id').val(result.role_id)
+            $('#first_name').val(result.first_name)
+            $('#middle_name').val(result.middle_name)
+            $('#last_name').val(result.last_name)
+            $('#email').val(result.email)
+            $('#phone').val(result.phone)
+            $('#gender').val(result.gender)
+            $('#civil').val(result.civil)
+            $('#birth_date').val(result.birth_date)
+            $('#address').val(result.address)
+
+            $(modal).modal({
+                "backdrop": "static",
+                "keyboard": true,
+                "show": true
+            })
+
+        })
+
+    }
+
+    var Delete = function (e) {
+
+        id = e.parentNode.parentNode.dataset.id
+
+        bootbox.confirm({
+            message: "All data related to this account will be lost. Continue?",
+            buttons: {
+                confirm: {
+                    label: 'Delete',
+                    className: 'btn-sm btn-danger'
+                },
+                cancel: {
+                    label: 'Cancel',
+                    className: 'btn-sm btn-info'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+
+                    Controller.POST('/api/account/delete', { 'id': id }).done(function (result) {
+                        if (result.success) location.reload() //e.parentNode.parentNode.remove()
+                    })
+
+                }
+            }
+        })
+    }
+
+</script>
+{% endblock %}

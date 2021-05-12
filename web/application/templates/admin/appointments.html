@@ -1,0 +1,397 @@
+{% extends 'shared/layout.html' %}
+{% block title %}
+Appointments
+{% endblock %}
+
+{% block css %}
+    <style>
+        .bg-late {
+            background-color: 	#ff7b7b;
+            color: white;
+        }
+    </style>
+{% endblock %}
+
+{% block modal %}
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content card bg-secondary shadow">
+                <div class="modal-header card-header bg-white border-0">
+                    <h4 class="card-title">Appointment Information</h4>
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                </div>
+                <div class="modal-body card-body">
+                    <div class="row">
+                        <input id="id" name="id" type="text" class="form-control " hidden
+                            value="-1">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-control-label">Case Number <span id="record_id_error" class="h5 text-danger"></span></label>
+                                <select id="record_id" name="record_id" data-style="bg-white px-4 py-3 shadow-sm" class="form-control  selectpicker" data-live-search="true">
+                                    {% for record in data.records %}
+                                        <option value="{{record.id}}">{{record.case_number}} ({{record.case_title}} at {{record.location}})</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-control-label">Details <span id="details_error" class="h5 text-danger"></span></label>
+                                <textarea id="details" name="details" type="text" class="form-control " rows="20"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="appointment" class="form-control-label">Appointment <span id="appointment_error" class="h5 text-danger"></span></label>
+                                <input class="form-control " type="datetime-local" id="appointment">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label class="form-control-label">Assigned Lupon <span id="assigned_lupon_error" class="h5 text-danger"></span></label>
+                                <select id="assigned_lupon" name="assigned_lupon" multiple data-style="bg-white px-4 py-3 shadow-sm" class="form-control  selectpicker" data-live-search="true">
+                                    {% for lupon in data.lupon %}
+                                        <option value="{{lupon.id}}">{{lupon.first_name}} {{lupon.last_name}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-sm btn-success" onclick="Save()">Save</button>
+                </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="modal-hearing">
+    <div class="modal-dialog">
+        <div class="modal-content card bg-secondary shadow">
+            <div class="modal-header card-header bg-white border-0">
+                <h4 class="card-title">Minutes of Hearing</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body card-body">
+                <input id="appointment_id" type="hidden" value="-1">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Minutes of Hearing <span id="minutes_error" class="h5 text-danger"></span></label>
+                            <textarea id="minutes" name="minutes" type="text" class="form-control " rows="15"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Status <span id="status_id_error" class="h5 text-danger"></span></label>
+                            <select id="status_id" name="status_id" data-style="bg-white px-4 py-3 shadow-sm" class="form-control  selectpicker" data-live-search="true">
+                                {% for status in data.status %}
+                                <option value="{{status.id}}">{{status.status}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-success" onclick="SaveHearing()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="main-content" id="panel">
+    <!-- Header -->
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <p class="display-2 text-white d-inline-block mb-0">Appointments</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="row align-items-center">
+                            <div class="col text-left">
+                                <button class="btn btn-sm btn-primary" onclick="AddNew()">Add New</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <!-- Projects table -->
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Case Number</th>
+                                    <th scope="col">Case Title</th>
+                                    <th scope="col">Appointment</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col" class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in data.appointments %}
+                                    <tr id='appointment-{{appointment.id}}' data-id={{appointment.id}}>
+                                        <th scope="row">
+                                            {{appointment.record.case_number}}
+                                        </th>
+                                        <td>
+                                            {{appointment.record.case_title}}
+                                        </td>
+                                        <td>
+                                            {% if appointment.appointment is not none %}
+                                                {{appointment.appointment.strftime('%h %d %Y %I:%M %p')}}
+                                            {% else %}
+                                                None
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if appointment.appointment >= data.current_date or appointment.minutes is not none %}
+                                                <span class="badge badge-lg badge-info mb-1">{{appointment.record.status.status}}</span>
+                                            {% endif %}
+
+                                            {% if appointment.appointment < data.current_date %}
+
+                                                {% if appointment.minutes is not none %}
+                                                    <span type='button' onclick="UpsertHearing(this, 1, '{{ appointment.id }}')" class="badge badge-lg badge-success d-block">Click here to edit minutes</span>
+                                                {% else %}
+                                                    <span class="badge badge-lg badge-danger d-block mb-1">No Minutes of Hearing</span>
+                                                    <span type='button' onclick="UpsertHearing(this, 0, '{{ appointment.id }}')" class="badge badge-lg badge-success d-block">Click here to add minutes</span>
+                                                {% endif %}
+
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-right">
+                                            <a href="/admin/appointment/{{appointment.id}}" class="btn btn-info btn-sm"><i class="fa fa-eye"></i></a>
+                                            <button onclick='Edit(this)' class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button>
+                                            <button onclick='Delete(this)' class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    setSideBar('#menu-appointments')
+
+    var modal           = '#modal-default'
+    var modal_hearing   = '#modal-hearing'
+
+    var notice = 
+        'NOTICE OF HEARING' +
+        ('\n') +
+        '(MEDIATION PROCEEDINGS)' +
+        ('\n') +
+        ('\n') +
+        'TO: <FULL NAME>' +
+        ('\n') +
+        '<ADDRESS>' +
+        ('\n') +
+        '<(Patient)>' +
+        ('\n') +
+        ('\n') +
+        'You are hereby required to appear at Kauswagan Barangay Hall on the ______________ day of ______________ at ______________ for a hearing of your complaint.'
+
+    var AddNew = function () {
+
+        $('#record_id_error').html('')
+        $('#details_error').html('')
+        $('#appointment_error').html('')
+        $('#assigned_lupon_error').html('')
+
+        $('#id').val('-1')        
+        $(".selectpicker").selectpicker('deselectAll')
+        $(".selectpicker").selectpicker('val', [])
+        $('#details').html(notice)
+        $('#appointment').val('')
+
+        $(modal).modal({
+            "backdrop": "static",
+            "keyboard": true,
+            "show": true
+        })
+
+    }
+
+    var Save = function () {
+
+        data = {
+            'id'                : $('#id').val(),
+            'record_id'       : $('#record_id').val(),
+            'details'           : $('#details').val(),
+            'appointment'          : $('#appointment').val(),
+            'assigned_lupon'    : JSON.stringify($('#assigned_lupon').val()),
+            'assigned_lupon_1'  : $('#assigned_lupon').val()[0] == undefined ? '' : $('#assigned_lupon').val()[0],
+        }
+
+        $('#record_id_error').html('')
+        $('#details_error').html('')
+        $('#appointment_error').html('')
+        $('#assigned_lupon_error').html('')
+
+        Controller.POST('/api/appointment/upsert', data).done(function (result) {
+            console.log(data, result)
+            if (result.success == true) {
+                location.reload()
+            }
+            else {
+                
+                if (result.errors.record_id) $('#record_id_error').html(result.errors.record_id)               
+                if (result.errors.details) $('#details_error').html(result.errors.details)               
+                if (result.errors.appointment) $('#appointment_error').html(result.errors.appointment)               
+                if (result.errors.assigned_lupon_1) $('#assigned_lupon_error').html(result.errors.assigned_lupon_1)               
+            }
+        })
+
+    }
+
+    var Edit = function (e) {
+
+        $('#record_id_error').html('')
+        $('#details_error').html('')
+        $('#appointment_error').html('')
+        $('#assigned_lupon_error').html('')
+
+        id = e.parentNode.parentNode.dataset.id
+
+        Controller.GET('/api/appointment/get/' + id, {}).done(function (result) {
+
+            $('#id').val(result.id)
+            $("#record_id").selectpicker('val', result.record_id)
+            $('#details').val(result.details)
+            $('#appointment').val(result.appointment)
+            $('#assigned_lupon').selectpicker('val', JSON.parse(result.lupon))
+
+            $(modal).modal({
+                "backdrop": "static",
+                "keyboard": true,
+                "show": true
+            })
+
+        })
+
+    }
+
+    var Delete = function (e) {
+
+        id = e.parentNode.parentNode.dataset.id
+
+        bootbox.confirm({
+            message: "Delete item?",
+            buttons: {
+                confirm: {
+                    label: 'Delete',
+                    className: 'btn-sm btn-danger'
+                },
+                cancel: {
+                    label: 'Cancel',
+                    className: 'btn-sm btn-info'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+
+                    Controller.POST('/api/appointment/delete', { 'id': id }).done(function (result) {
+                        if (result.success) e.parentNode.parentNode.remove()
+                    })
+
+                }
+            }
+        })
+    }
+
+    // ===============================
+
+    var UpsertHearing = function(el, inEditMode, appointment_id) {
+
+        $('#minutes_error').html('')
+        $('#status_id_error').html('')
+
+        if(!inEditMode) {
+
+            $('#appointment_id').val(appointment_id)
+            $(".selectpicker").selectpicker('deselectAll')
+            $(".selectpicker").selectpicker('val', [])
+            $('#minutes').html('')
+
+        }
+        else {
+
+            
+            Controller.GET('/api/appointment/get/' + appointment_id, {}).done(function (result) {
+
+                $('#appointment_id').val(appointment_id)
+                $("#status_id").selectpicker('val', result.record_status_id)
+                $('#minutes').html(result.minutes)
+
+            })
+
+        }
+        
+        $(modal_hearing).modal({
+            "backdrop": "static",
+            "keyboard": true,
+            "show": true
+        })
+
+    }
+
+    var SaveHearing = function() {
+
+        $('#minutes_error').html('')
+        $('#status_id_error').html('')
+
+        data = {
+            'id'        : $('#appointment_id').val(),
+            'minutes'   : $('#minutes').val(),
+            'status_id' : $('#status_id').val()
+        }
+
+        console.log(data)
+
+        Controller.POST('/api/appointment/hearing/upsert', data).done(function (result) {
+            if (result.success == true) {
+                location.reload()
+            }
+            else {
+                if (result.errors.minutes) $('#minutes_error').html(result.errors.minutes)
+                if (result.errors.status_id) $('#status_id_error').html(result.errors.status_id)
+            }
+            
+        })
+
+    }
+
+</script>
+{% endblock %}

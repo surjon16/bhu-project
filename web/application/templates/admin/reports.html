@@ -1,0 +1,117 @@
+{% extends 'shared/layout.html' %}
+{% block title %}
+Reports
+{% endblock %}
+
+{% block css %}
+<style>
+    .ui-datepicker-calendar {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="main-content" id="panel">
+    <!-- Header -->
+    <div class="header bg-primary pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <p class="display-2 text-white d-inline-block mb-0">Reports</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="row align-items-center">
+                            <div class="col">
+                                <div class="form-group">
+                                    <label class="form-control-label d-block">Cases Per Month</label>
+                                    <form action="/admin/reports" method="post">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
+                                        <input id="date" name="date" type="month" class="form-control form-control-sm  w-25 d-inline-block" value="{{data.date}}">
+                                        <button class="btn btn-sm btn-primary" type="submit">Search</button>
+                                    </form>
+                                    <button class="btn btn-sm btn-danger mt-2" onclick="Export()"><i class="fa fa-print"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="reports-table" class="table-responsive">
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Case No.</th>
+                                    <th scope="col">Case Title</th>
+                                    <th scope="col">Patient</th>
+                                    <th scope="col">Respondent</th>
+                                    <th scope="col">Date Filed</th>
+                                    <!-- <th scope="col">First Hearing</th> -->
+                                    <!-- <th scope="col">Last Hearing</th> -->
+                                    <th scope="col">Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for record in data.records %}
+                                    <tr>
+                                        <th scope="row">
+                                            {{record.case_number}}
+                                        </th>
+                                        <td>
+                                            {{record.case_title}}
+                                        </td>
+                                        <td>
+                                            {{record.patient.first_name}} {{record.patient.last_name}}
+                                        </td>
+                                        <td>
+                                            {{record.respondent}}
+                                        </td>
+                                        <td>
+                                            {{record.date_reported.strftime('%h %d %Y %I:%M %p')}}
+                                        </td>
+                                        <!-- <td>
+                                            {{(record.records_appointments|first).appointment.strftime('%h %d %Y %I:%M %p') if (record.records_appointments|length) > 0 else 'NONE'}}
+                                        </td>
+                                        <td>
+                                            {{(record.records_appointments|last).appointment.strftime('%h %d %Y %I:%M %p') if (record.records_appointments|length) > 1 else 'NONE'}}
+                                        </td> -->
+                                        <td>
+                                            {{record.status.status}}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    setSideBar('#menu-reports')
+
+    function Export() {
+        // document.getElementById('reports-table').print()
+        var printContents = document.getElementById('reports-table').innerHTML;
+        var originalContents = document.body.innerHTML;
+        document.body.innerHTML = printContents;
+        window.print();
+        document.body.innerHTML = originalContents;
+    }
+
+</script>
+{% endblock %}
