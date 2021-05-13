@@ -2,7 +2,7 @@ from flask          import flash, jsonify, render_template, request, redirect, u
 from flask_login    import login_required, login_user, logout_user, current_user
 from application    import app
 from data.repo      import Repository
-from data.schemas   import RegisterAccountSchema, CreateRecordSchema
+from data.schemas   import RegisterAccountSchema
 from datetime       import datetime
 from functools      import wraps
 
@@ -45,7 +45,6 @@ def patient_login_required(f):
 # WEB VIEWS
 # ===============================================================
  
-
 @app.route('/')
 @login_required
 def home():
