@@ -37,8 +37,8 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-    String url = "https://vincentcubillan.pythonanywhere.com";
-//    String url = "http://192.168.110.108:8080";
+//    String url = "https://vincentcubillan.pythonanywhere.com";
+    String url = "http://192.168.110.102:8080";
 
     NotificationCompat.Builder nt;
     NotificationManagerCompat nmc;
@@ -74,28 +74,6 @@ public class MainActivity extends AppCompatActivity {
         webView.setScrollBarStyle(View.SCROLLBARS_INSIDE_OVERLAY);
         webView.loadUrl(url + "/patient/dashboard");
 
-        new JsonTask().execute();
-        final Handler handler = new Handler();
-        Timer timer = new Timer();
-        TimerTask doAsynchronousTask = new TimerTask()
-        {
-            @Override
-            public void run() {
-                handler.post(new Runnable() {
-                    public void run() {
-                        try
-                        {
-                            new JsonTask().execute();
-                        }
-                        catch (Exception e){
-                            e.printStackTrace();
-                        }
-                    }
-                });
-            }
-        };
-        timer.appointment(doAsynchronousTask, 0, 1000 * 60); // notify every 1 minute
-
     }
 
     public class webClient extends WebViewClient{
@@ -110,94 +88,4 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    class JsonTask extends AsyncTask<Void, Void, String> {
-
-        String dataUrl;
-
-        @Override
-        protected void onPreExecute() {
-            dataUrl = url + "/api/patient/notifications";
-        }
-
-        @Override
-        protected String doInBackground(Void... params) {
-            try {
-
-                URL url = new URL(dataUrl);
-                HttpURLConnection httpURLConnection = (HttpURLConnection) url.openConnection();
-                InputStream inputStream = httpURLConnection.getInputStream();
-                BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream));
-                StringBuilder stringBuilder = new StringBuilder();
-
-                while ((JSON_STRING = bufferedReader.readLine()) != null) {
-                    stringBuilder.append(JSON_STRING + "\n");
-                }
-
-                bufferedReader.close();
-                inputStream.close();
-                httpURLConnection.disconnect();
-
-                return stringBuilder.toString().trim();
-
-
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-
-            return null;
-
-        }
-
-        @Override
-        protected void onProgressUpdate(Void... values) {
-            super.onProgressUpdate(values);
-        }
-
-        @RequiresApi(api = Build.VERSION_CODES.M)
-        @Override
-        protected void onPostExecute(String jsonStr) {
-
-            if (jsonStr != null) {
-                try {
-
-                    JSONArray dataArray = new JSONArray(jsonStr);
-
-                    String notifMessage = "";
-
-                    for (int i = 0; i < dataArray.length(); i++) {
-                        JSONObject b = dataArray.getJSONObject(i);
-                        Double level = b.getDouble("level");
-                        if (level >= 80.0) {
-                            notifMessage += "Bin " + b.getString("dataID") + " is already " + String.format("%.2f", level) + "% full! \n";
-                        }
-                    }
-
-
-                    if (dataArray.length() > 0 ){
-
-                        nt = new NotificationCompat.Builder(MainActivity.this, "localnotif");
-                        nmc = NotificationManagerCompat.from(MainActivity.this);
-
-                        nt.setAutoCancel(true);
-                        nt.setSmallIcon(R.mipmap.ic_launcher_round);
-                        nt.setTicker("notifMessage");
-                        nt.setWhen(System.currentTimeMillis());
-                        nt.setContentTitle("Material Recovery Bin");
-                        nt.setContentText("The bin is already full!");
-
-                        nmc.notify(1, nt.build());
-
-                    }
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-
-            }
-
-        }
-    }
 }

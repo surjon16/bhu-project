@@ -9,12 +9,12 @@
 <div class="main-content" id="panel">
 
     <!-- Header -->
-    <div class="header bg-primary pb-6">
+    <div class="header pb-6">
         <div class="container-fluid">
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <p class="display-2 text-white d-inline-block mb-0">Dashboard</p>
+                        <p class="display-2 text-default d-inline-block mb-0">Dashboard</p>
                     </div>
                 </div>
             </div>  
@@ -46,8 +46,8 @@
                         <div class="card-header border-0">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <h3 class="mb-0 d-inline-block">Filed Cases</h3>
-                                    <button class="btn btn-sm btn-primary float-right" onclick="Refresh()">Refresh</button>
+                                    <h3 class="mb-0 d-inline-block">Appointments</h3>
+                                    <button class="btn btn-sm btn-success float-right" onclick="Refresh()">Refresh</button>
                                 </div>
                             </div>
                         </div>
@@ -56,39 +56,25 @@
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Service</th>
                                         <th scope="col">Status</th>
-                                        <th scope="col">Title</th>
-                                        <th scope="col">Date Filed</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for record in data.records %}
-                                        {% if current_user.role_id == 2 %}
-                                            <tr>
-                                                <th scope="row">
-                                                    {{record.status.status}}
+                                    {% for appointment in data.appointments %}
+                                        {% if current_user.id == appointment.account.id and appointment.status.status != 'Pending' %}
+                                            <tr onclick="window.location='/patient/appointment/details/{{ appointment.id }}';">
+                                                <td scope="row">
+                                                    {{appointment.appointment_date.strftime('%h %d %Y')}}
+                                                </td>
+                                                <th>
+                                                    {{appointment.service.service}}
                                                 </th>
-                                                <td>
-                                                    {{record.case_title}}
-                                                </td>
-                                                <td>
-                                                    {{record.date_reported.strftime('%h %d %Y')}}
-                                                </td>
-                                            </tr>
-                                        {% else %}
-                                            {% if current_user.id == record.patient.id %}
-                                            <tr>
-                                                <th scope="row">
-                                                    {{record.status.status}}
+                                                <th>
+                                                    {{ appointment.status.status }}
                                                 </th>
-                                                <td>
-                                                    {{record.case_title}}
-                                                </td>
-                                                <td>
-                                                    {{record.date_reported.strftime('%h %d %Y')}}
-                                                </td>
                                             </tr>
-                                            {% endif %}
                                         {% endif %}
                                     {% endfor %}
                                 </tbody>
@@ -103,8 +89,8 @@
                         <div class="card-header border-0">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <h3 class="mb-0 d-inline-block">Appointments</h3>
-                                    <button class="btn btn-sm btn-primary float-right" onclick="Refresh()">Refresh</button>
+                                    <h3 class="mb-0 d-inline-block">Pending Requests</h3>
+                                    <button class="btn btn-sm btn-success float-right" onclick="Refresh()">Refresh</button>
                                 </div>
                             </div>
                         </div>
@@ -113,32 +99,68 @@
                             <table class="table align-items-center table-flush">
                                 <thead class="thead-light">
                                     <tr>
-                                        <th scope="col">Case Title</th>
-                                        <th scope="col">Date of Hearing</th>
+                                        <th scope="col">Date</th>
+                                        <th scope="col">Service</th>
+                                        <th scope="col">Status</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {% for appointment in data.appointments %}
-                                        {% if current_user.role_id == 2 %}
-                                                <tr>
-                                                    <th scope="row">
-                                                        {{appointment.record.case_title}} ({{appointment.record.status.status}})
-                                                    </th>
-                                                    <td>
-                                                        {{appointment.appointment.strftime('%h %d %Y')}}
-                                                    </td>
-                                                </tr>
-                                        {% else %}
-                                            {% if current_user.id == appointment.record.patient.id %}
-                                                <tr>
-                                                    <th scope="row">
-                                                        {{appointment.record.case_title}} ({{appointment.record.status.status}})
-                                                    </th>
-                                                    <td>
-                                                        {{appointment.appointment.strftime('%h %d %Y')}}
-                                                    </td>
-                                                </tr>
-                                            {% endif %}
+                                        {% if current_user.id == appointment.account.id and appointment.status.status == 'Pending' %}
+                                            <tr onclick="window.location='/patient/appointment/details/{{ appointment.id }}';">
+                                                <td scope="row">
+                                                    {{appointment.appointment_date.strftime('%h %d %Y')}}
+                                                </td>
+                                                <th>
+                                                    {{appointment.service.service}}
+                                                </th>
+                                                <th>
+                                                    {{ appointment.status.status }}
+                                                </th>
+                                            </tr>
+                                        {% endif %}
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col">
+                    <div class="card">
+                        <div class="card-header border-0">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <h3 class="mb-0 d-inline-block">Medical Records</h3>
+                                    <button class="btn btn-sm btn-success float-right" onclick="Refresh()">Refresh</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="table-responsive">
+                            <!-- Projects table -->
+                            <table class="table align-items-center table-flush">
+                                <thead class="thead-light">
+                                    <tr>
+                                        <th scope="col">Record Number</th>
+                                        <th scope="col">Service</th>
+                                        <th scope="col">Date Recorded</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in data.appointments %}
+                                        {% if current_user.id == appointment.account.id and appointment.record_number is not none %}
+                                            <tr onclick="window.location='/patient/record/details/{{ appointment.id }}';">
+                                                <td scope="row">
+                                                    {{ appointment.record_number }}
+                                                </td>
+                                                <th>
+                                                    {{appointment.service.service}}
+                                                </th>
+                                                <th> 
+                                                    {{appointment.appointment_date.strftime('%h %d %Y')}}
+                                                </th>
+                                            </tr>
                                         {% endif %}
                                     {% endfor %}
                                 </tbody>

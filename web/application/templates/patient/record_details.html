@@ -1,0 +1,84 @@
+{% extends 'patient/shared/layout.html' %}
+{% block title %}
+Appointment Details
+{% endblock %}
+
+{% block css %}{% endblock %}
+
+{% block content %}
+<div class="main-content" id="panel">
+
+    <!-- Header -->
+    <div class="header pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <p class="display-2 text-default d-inline-block mb-0">Record Details</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header border-1">
+                        <div class="row align-items-center">
+                            <div class="col text-left">
+                                <h4 class="card-title d-inline">Medical Record</h4>
+                                <a class="btn btn-sm btn-success float-right" href="/patient/dashboard">Back</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label class="form-control-label">Record Number</label>
+                                    <input type="text" class="form-control" value="{{data.appointment.record_number}}">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="record_date" class="form-control-label">Date Recorded</label>
+                                    <input class="form-control" type="text" value="{{data.appointment.record_date}}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-control-label">Patient</label>
+                                    <input class="form-control" type="text"
+                                        value="{{data.appointment.account.first_name}} {{data.appointment.account.last_name}}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-control-label">Details</label>
+                                    <textarea type="text" class="form-control "
+                                        rows="20">{{ data.appointment.record_details }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    setSideBar('#menu-dashboard')
+
+</script>
+{% endblock %}

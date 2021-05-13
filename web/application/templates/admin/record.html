@@ -8,12 +8,12 @@ Case Records
 {% block content %}
 <div class="main-content" id="panel">
     <!-- Header -->
-    <div class="header bg-primary pb-6">
+    <div class="header pb-6">
         <div class="container-fluid">
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <p class="display-2 text-white d-inline-block mb-0">Case Record</p>
+                        <p class="display-2 text-default d-inline-block mb-0">Case Record</p>
                     </div>
                 </div>
             </div>
@@ -28,7 +28,7 @@ Case Records
                     <div class="card-header border-1">
                         <div class="row align-items-center">
                             <div class="col text-left">
-                                <!-- <button class="btn btn-sm btn-primary" onclick="AddNew()">Add New</button> -->
+                                <!-- <button class="btn btn-sm btn-success" onclick="AddNew()">Add New</button> -->
                                 <h4 class="card-title">Case Details</h4>
                             </div>
                         </div>
@@ -43,8 +43,8 @@ Case Records
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-control-label">Case Number</label>
-                                    <input type="text" class="form-control" value="{{data.record.case_number}}">
+                                    <label class="form-control-label">Record Number</label>
+                                    <input type="text" class="form-control" value="{{data.record.record_number}}">
                                 </div>
                             </div>
                         </div>
@@ -73,8 +73,8 @@ Case Records
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label for="date_reported" class="form-control-label">Date Reported</label>
-                                    <input class="form-control" type="text" value="{{data.record.date_reported}}">
+                                    <label for="date_recorded" class="form-control-label">Date Reported</label>
+                                    <input class="form-control" type="text" value="{{data.record.date_recorded}}">
                                 </div>
                             </div>
                         </div>
@@ -159,22 +159,22 @@ Case Records
 
     var AddNew = function () {
 
-        // $('#case_number_error').html('')
+        // $('#record_number_error').html('')
         $('#case_title_error').html('')
         $('#location_error').html('')
         $('#narrative_error').html('')
-        $('#date_reported_error').html('')
+        $('#date_recorded_error').html('')
         $('#date_record_error').html('')
         $('#status_id_error').html('')
         $('#patient_error').html('')
         $('#respondent_error').html('')
 
         $('#id').val('-1')
-        $('#case_number').val('{{((data.record.records|length + 1)|string).zfill(4)}} -- {{now.year}}')
+        $('#record_number').val('{{((data.record.records|length + 1)|string).zfill(4)}} -- {{now.year}}')
         $('#case_title').val('')
         $('#location').val('')
         $('#narrative').val('')
-        $('#date_reported').val('')
+        $('#date_recorded').val('')
         $('#date_record').val('')
         $('#status_id').val('')
         $('#patient').val('')
@@ -190,11 +190,11 @@ Case Records
 
     var Save = function () {
 
-        $('#case_number_error').html('')
+        $('#record_number_error').html('')
         $('#case_title_error').html('')
         $('#location_error').html('')
         $('#narrative_error').html('')
-        $('#date_reported_error').html('')
+        $('#date_recorded_error').html('')
         $('#date_record_error').html('')
         $('#status_id_error').html('')
         $('#patient_error').html('')
@@ -202,11 +202,11 @@ Case Records
 
         data = {
             'id': $('#id').val(),
-            'case_number': $('#case_number').val(),
+            'record_number': $('#record_number').val(),
             'case_title': $('#case_title').val(),
             'location': $('#location').val(),
             'narrative': $('#narrative').val(),
-            'date_reported': $('#date_reported').val(),
+            'date_recorded': $('#date_recorded').val(),
             'date_record': $('#date_record').val(),
             'status_id': $('#status_id').val(),
             'patient': $('#patient').val(),
@@ -220,11 +220,11 @@ Case Records
             }
             else {
 
-                if (result.errors.case_number) $('#case_number_error').html(result.errors.case_number)
+                if (result.errors.record_number) $('#record_number_error').html(result.errors.record_number)
                 if (result.errors.case_title) $('#case_title_error').html(result.errors.case_title)
                 if (result.errors.location) $('#location_error').html(result.errors.location)
                 if (result.errors.narrative) $('#narrative_error').html(result.errors.narrative)
-                if (result.errors.date_reported) $('#date_reported_error').html(result.errors.date_reported)
+                if (result.errors.date_recorded) $('#date_recorded_error').html(result.errors.date_recorded)
                 if (result.errors.date_record) $('#date_record_error').html(result.errors.date_record)
                 if (result.errors.status_id) $('#status_id_error').html(result.errors.status_id)
                 if (result.errors.patient) $('#patient_error').html(result.errors.patient)
@@ -238,11 +238,11 @@ Case Records
 
     var Edit = function (e) {
 
-        $('#case_number_error').html('')
+        $('#record_number_error').html('')
         $('#case_title_error').html('')
         $('#location_error').html('')
         $('#narrative_error').html('')
-        $('#date_reported_error').html('')
+        $('#date_recorded_error').html('')
         $('#date_record_error').html('')
         $('#status_id_error').html('')
         $('#patient_error').html('')
@@ -253,11 +253,11 @@ Case Records
         Controller.GET('/api/record/get/' + id, {}).done(function (result) {
 
             $('#id').val(result.id)
-            $('#case_number').val(result.case_number)
+            $('#record_number').val(result.record_number)
             $('#case_title').val(result.case_title)
             $('#location').val(result.location)
             $('#narrative').val(result.narrative)
-            $('#date_reported').val(result.date_reported)
+            $('#date_recorded').val(result.date_recorded)
             $('#date_record').val(result.date_record)
             $('#status_id').val(result.status_id)
             $('#patient').val(result.patient_id)

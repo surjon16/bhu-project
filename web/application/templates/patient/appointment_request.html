@@ -1,0 +1,125 @@
+{% extends 'patient/shared/layout.html' %}
+{% block title %}
+Request Appointment
+{% endblock %}
+
+{% block css %}{% endblock %}
+
+{% block content %}
+<div class="main-content" id="panel">
+
+    <!-- Header -->
+    <div class="header pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <p class="display-2 text-default d-inline-block mb-0">Appointment Request</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card bg-secondary shadow">
+                    <div class="card-header bg-white border-0">
+                        <h4 class="card-title d-inline">Appointment Information</h4>
+                        <a class="btn btn-sm btn-success float-right" href="/patient/dashboard">Back</a>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <input id="id" name="id" type="text" class="form-control " hidden value="-1">
+                            <input id="status_id" name="status_id" type="text" class="form-control " hidden value="4">
+                            <input id="account_id" name="account_id" type="text" class="form-control " hidden value="{{ current_user.id }}">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-control-label">Details <span id="details_error"
+                                            class="h5 text-danger"></span></label>
+                                    <textarea id="details" name="details" type="text" class="form-control " rows="5"></textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="appointment_date" class="form-control-label">Appointment <span id="appointment_date_error" class="h5 text-danger"></span></label>
+                                    <input class="form-control " type="datetime-local" id="appointment_date">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-control-label">Service <span id="service_id_error" class="h5 text-danger"></span></label>
+                                    <select id="service_id" name="service_id" data-style="bg-white px-4 py-3 shadow-sm" class="form-control selectpicker" data-live-search="true">
+                                        {% for service in data.services %}
+                                            <option value="{{service.id}}">{{service.service}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-sm btn-success" onclick="SaveAppointment()">Save</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    function Refresh() {
+        window.location.href = '/patient/appointment/request'
+    }
+
+    
+    var SaveAppointment = function () {
+
+        data = {
+            'id'                : $('#id').val(),
+            'account_id'        : $('#account_id').val(),
+            'service_id'        : $('#service_id').val(),
+            'status_id'         : $('#status_id').val(),
+            'details'           : $('#details').val(),
+            'appointment_date'  : $('#appointment_date').val(),
+            'assigned'          : ''
+        }
+
+        $('#record_id_error').html('')
+        $('#details_error').html('')
+        $('#appointment_date_error').html('')
+        $('#account_id_error').html('')
+        $('#status_id_error').html('')
+        $('#service_id_error').html('')
+
+        Controller.POST('/api/appointment/upsert', data).done(function (result) {
+            console.log(result)
+            if (result.success == true) {
+                location.href = '/patient/dashboard'
+            }
+            else {
+
+                if (result.errors.account_id) $('#account_id_error').html(result.errors.account_id)
+                if (result.errors.status_id) $('#status_id_error').html(result.errors.status_id)
+                if (result.errors.service_id) $('#service_id_error').html(result.errors.service_id)
+                if (result.errors.details) $('#details_error').html(result.errors.details)
+                if (result.errors.appointment_date) $('#appointment_date_error').html(result.errors.appointment_date)
+            }
+        })
+
+    }
+
+
+</script>
+{% endblock %}

@@ -24,7 +24,7 @@
             {% for record in data.records %}
             <tr>
                 <th scope="row">
-                    {{record.case_number}}
+                    {{record.record_number}}
                 </th>
                 <td>
                     {{record.case_title}}
@@ -36,7 +36,7 @@
                     {{record.respondent}}
                 </td>
                 <td>
-                    {{record.date_reported.strftime('%h %d %Y %I:%M %p')}}
+                    {{record.date_recorded.strftime('%h %d %Y %I:%M %p')}}
                 </td>
                 <td>
                     {{(record.records_appointments|first).appointment.strftime('%h %d %Y %I:%M %p') if

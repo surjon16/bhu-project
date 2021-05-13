@@ -1,7 +1,7 @@
 from flask          import jsonify, render_template, request, redirect, url_for, make_response
 from application    import app
 from data.repo      import Repository
-from data.schemas   import CreateAccountSchema, UpdateAccountSchema, CreateRecordSchema, CreateAppointmentSchema, CreateHearingSchema
+from data.schemas   import CreateAccountSchema, UpdateAccountSchema, CreateRecordSchema, CreateAppointmentSchema, CreateServiceSchema, CreateInventorySchema
 
 # API RESOURCE PATTERN
 
@@ -84,6 +84,11 @@ def delete_record():
 def get_appointment(id):
     return jsonify(Repository.readAppointment(id).__str__())
 
+@app.route('/api/appointment/get/daily', methods=['GET'])
+def get_daily_appointments():
+    return jsonify(Repository.readInventoriesGroupByItem())
+    return jsonify([data.__str__() for data in Repository.readInventoriesGroupByItem()])
+
 @app.route('/api/appointment/get/all', methods=['GET'])
 def get_all_appointments():
     return jsonify([data.__str__() for data in Repository.readAppointments()])
@@ -107,20 +112,33 @@ def delete_appointment():
         return {'success':True}
     return {'success':False}
 
-
 # ==================================================================================
-# HEARING
+# INVENTORY
 
-@app.route('/api/appointment/hearing/upsert', methods=['POST'])
-def upsert_hearing():
+@app.route('/api/inventory/get/<id>', methods=['GET'])
+def get_inventory(id):
+    return jsonify(Repository.readInventory(id).__str__())
 
-    validator = CreateHearingSchema(unknown='EXCLUDE')
+@app.route('/api/inventory/get/all', methods=['GET'])
+def get_all_inventory():
+    return jsonify([data.__str__() for data in Repository.readInventories()])
+
+@app.route('/api/inventory/upsert', methods=['POST'])
+def upsert_inventory():
+    
+    validator = CreateInventorySchema(unknown='EXCLUDE')
     errors = validator.validate(request.form)
 
     if errors:
         return jsonify({'success':False, 'errors':errors})
 
-    if Repository.upsertHearing(request.form):
+    if Repository.upsertInventory(request.form):
+        return {'success':True}
+    return {'success':False}
+
+@app.route('/api/inventory/delete', methods=['POST'])
+def delete_inventory():
+    if Repository.deleteInventory(request.form):
         return {'success':True}
     return {'success':False}
 
@@ -144,6 +162,36 @@ def upsert_role():
 @app.route('/api/role/delete', methods=['POST'])
 def delete_role():
     if Repository.deleteRole(request.form):
+        return {'success':True}
+    return {'success':False}
+
+# ==================================================================================
+# SERVICES
+
+@app.route('/api/service/get/<id>', methods=['GET'])
+def get_service(id):
+    return jsonify(Repository.readService(id).__str__())
+
+@app.route('/api/service/get/all', methods=['GET'])
+def get_services():
+    return jsonify([data.__str__() for data in Repository.readServices()])
+
+@app.route('/api/service/upsert', methods=['POST'])
+def upsert_service():
+    
+    validator = CreateServiceSchema(unknown='EXCLUDE')
+    errors = validator.validate(request.form)
+
+    if errors:
+        return jsonify({'success':False, 'errors':errors})
+
+    if Repository.upsertService(request.form):
+        return {'success':True}
+    return {'success':False}
+
+@app.route('/api/service/delete', methods=['POST'])
+def delete_service():
+    if Repository.deleteService(request.form):
         return {'success':True}
     return {'success':False}
 

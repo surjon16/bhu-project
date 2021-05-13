@@ -117,7 +117,6 @@ def resident(id):
     response = Repository.readAccount(id)
     return render_template('admin/resident.html', data=response)
 
-
 @app.route('/admin/residents/search', methods=['POST', 'GET'])
 @login_required
 @admin_login_required
@@ -141,7 +140,7 @@ def records():
         'roles'     : Repository.readRoles(),
         'status'    : Repository.readAllStatus(),
         'accounts'  : Repository.readAccounts(),
-        'records' : Repository.readRecords()
+        'records'   : Repository.readRecords()
     }
     return render_template('admin/records.html', data=response)
 
@@ -150,10 +149,65 @@ def records():
 @admin_login_required
 def record(id):
     response = {
-        'record' : Repository.readRecord(id),
-        'lupon'    : Repository.readLuponAccounts()
+        'record' : Repository.readRecord(id)
     }
     return render_template('admin/record.html', data=response)
+
+@app.route('/admin/records/search', methods=['POST', 'GET'])
+@login_required
+@admin_login_required
+def search_records():
+    if request.method == 'POST':
+        account_id = int(request.form['account_id'])
+        if account_id == -1:
+            return redirect(url_for('records'))
+
+        response = {
+            'roles'     : Repository.readRoles(),
+            'status'    : Repository.readAllStatus(),
+            'accounts'  : Repository.readAccounts(),
+            'records'   : Repository.searchRecords(account_id)
+        }
+        return render_template('admin/records.html', data=response)
+
+@app.route('/admin/inventories')
+@login_required
+@admin_login_required
+def inventories():
+    response = {
+        'status'                        : Repository.readAllStatus(),
+        'inventories'                   : Repository.readInventories(),
+        'inventories_by_item'           : Repository.readInventoriesGroupByItem(),
+        'inventories_by_item_status'    : Repository.readInventoriesGroupByItemAndStatus(),
+        'current_date'                  : datetime.now()
+    }
+    return render_template('admin/inventories.html', data=response)
+
+@app.route('/admin/inventory/<id>')
+@login_required
+@admin_login_required
+def inventory(id):
+    response = {
+        'inventory' : Repository.readInventory(id),
+        'current_date'  : datetime.now()
+    }
+    return render_template('admin/inventory.html', data=response)
+
+@app.route('/admin/inventories/search', methods=['POST', 'GET'])
+@login_required
+@admin_login_required
+def search_inventories():
+    if request.method == 'POST':
+        category = int(request.form['category'])
+        if category == -1:
+            return redirect(url_for('inventories'))
+
+        response = {
+            'status'        : Repository.readAllStatus(),
+            'inventories'   : [Repository.readInventory(category)],
+            'current_date'  : datetime.now()
+        }
+        return render_template('admin/inventories.html', data=response)
 
 @app.route('/admin/appointments')
 @login_required
@@ -162,11 +216,12 @@ def appointments():
     response = {
         'roles'         : Repository.readRoles(),
         'status'        : Repository.readAllStatus(),
+        'services'      : Repository.readServices(),
         'accounts'      : Repository.readAccounts(),
-        'lupon'         : Repository.readLuponAccounts(),
-        'records'     : Repository.readRecords(),
-        'appointments'     : Repository.readAppointments(),
-        'current_date'  : datetime.now()
+        'residents'     : Repository.readResidentAccounts(),
+        'records'       : Repository.readRecords(),
+        'appointments'  : Repository.readAppointments(),#Repository.readDailyAppointments(datetime.now().strftime('%m/%d/%Y')),
+        'current_date'  : datetime.now().strftime('%m/%d/%Y')
     }
     return render_template('admin/appointments.html', data=response)
 
@@ -175,10 +230,29 @@ def appointments():
 @admin_login_required
 def appointment(id):
     response = {
-        'appointment' : Repository.readAppointment(id),
-        'lupon'    : Repository.readLuponAccounts()
+        'appointment' : Repository.readAppointment(id)
     }
     return render_template('admin/appointment.html', data=response)
+
+@app.route('/admin/appointment/search', methods=['POST', 'GET'])
+@login_required
+@admin_login_required
+def search_appointments():
+    if request.method == 'POST':
+        date = request.form['date']
+        response = {
+            'roles'         : Repository.readRoles(),
+            'status'        : Repository.readAllStatus(),
+            'services'      : Repository.readServices(),
+            'accounts'      : Repository.readAccounts(),
+            'residents'     : Repository.readResidentAccounts(),
+            'records'       : Repository.readRecords(),
+            'appointments'  : Repository.readDailyAppointments(date),
+            'current_date'  : date
+        }
+        return render_template('admin/appointments.html', data=response)
+
+    return redirect(url_for('appointments'))
 
 @app.route('/admin/accounts')
 @login_required
@@ -193,6 +267,15 @@ def accounts():
 def account(id):
     response = Repository.readAccount(id)
     return render_template('admin/account.html', data=response)
+
+@app.route('/admin/services')
+@login_required
+@admin_login_required
+def services():
+    response = {
+        'services' : Repository.readServices()
+    }
+    return render_template('admin/services.html', data=response)
 
 @app.route('/admin/settings')
 @login_required
@@ -210,7 +293,7 @@ def login():
         data = Repository.loginAccount(request.form)
         if data is not None and data is not False:
             if data.role_id is not None:
-                if data.role_id < 3 and data.position != 'Barangay Lupon':
+                if data.role_id < 3 and data.occupation != 'Barangay Lupon':
                     return redirect(url_for('dashboard'))        
             return redirect(url_for('patient_dashboard'))
         else:
@@ -251,8 +334,8 @@ def patient_dashboard():
     response = {
         'notifications' : Repository.readAllNotifications(),
         'accounts'      : Repository.readAccounts(),
-        'records'     : Repository.readRecords(),
-        'appointments'     : Repository.readAppointments()
+        'records'       : Repository.readRecords(),
+        'appointments'  : Repository.readAppointments()
     }
     return render_template('patient/dashboard.html', data=response)
 
@@ -265,10 +348,38 @@ def patient_appointments():
         'roles'         : Repository.readRoles(),
         'status'        : Repository.readAllStatus(),
         'accounts'      : Repository.readAccounts(),
-        'records'     : Repository.readRecords(),
-        'appointments'     : Repository.readAppointments()
+        'records'       : Repository.readRecords(),
+        'appointments'  : Repository.readAppointments()
     }
     return render_template('patient/appointments.html', data=response)
+
+@app.route('/patient/appointment/details/<id>')
+@login_required
+@patient_login_required
+def patient_appointment_details(id):
+    response = {
+        'appointment'   : Repository.readAppointment(id)
+    }
+    return render_template('patient/appointment_details.html', data=response)
+
+@app.route('/patient/record/details/<id>')
+@login_required
+@patient_login_required
+def patient_record_details(id):
+    response = {
+        'appointment'   : Repository.readAppointment(id)
+    }
+    return render_template('patient/record_details.html', data=response)
+
+@app.route('/patient/appointment/request')
+@login_required
+@patient_login_required
+def patient_appointment_request():
+    response = {
+        'status'        : Repository.readAllStatus(),
+        'services'      : Repository.readServices()
+    }
+    return render_template('patient/appointment_request.html', data=response)
 
 @app.route('/patient/notifications')
 @login_required

@@ -14,12 +14,12 @@ Reports
 {% block content %}
 <div class="main-content" id="panel">
     <!-- Header -->
-    <div class="header bg-primary pb-6">
+    <div class="header pb-6">
         <div class="container-fluid">
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <p class="display-2 text-white d-inline-block mb-0">Reports</p>
+                        <p class="display-2 text-default d-inline-block mb-0">Reports</p>
                     </div>
                 </div>
             </div>
@@ -39,7 +39,7 @@ Reports
                                     <form action="/admin/reports" method="post">
                                         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                                         <input id="date" name="date" type="month" class="form-control form-control-sm  w-25 d-inline-block" value="{{data.date}}">
-                                        <button class="btn btn-sm btn-primary" type="submit">Search</button>
+                                        <button class="btn btn-sm btn-success" type="submit">Search</button>
                                     </form>
                                     <button class="btn btn-sm btn-danger mt-2" onclick="Export()"><i class="fa fa-print"></i></button>
                                 </div>
@@ -64,7 +64,7 @@ Reports
                                 {% for record in data.records %}
                                     <tr>
                                         <th scope="row">
-                                            {{record.case_number}}
+                                            {{record.record_number}}
                                         </th>
                                         <td>
                                             {{record.case_title}}
@@ -76,7 +76,7 @@ Reports
                                             {{record.respondent}}
                                         </td>
                                         <td>
-                                            {{record.date_reported.strftime('%h %d %Y %I:%M %p')}}
+                                            {{record.date_recorded.strftime('%h %d %Y %I:%M %p')}}
                                         </td>
                                         <!-- <td>
                                             {{(record.records_appointments|first).appointment.strftime('%h %d %Y %I:%M %p') if (record.records_appointments|length) > 0 else 'NONE'}}

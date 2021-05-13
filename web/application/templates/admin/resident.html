@@ -146,12 +146,12 @@ Resident Information
 {% block content %}
 <div class="main-content" id="panel">
     <!-- Header -->
-    <div class="header bg-primary pb-6">
+    <div class="header pb-6">
         <div class="container-fluid">
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <p class="display-2 text-white d-inline-block mb-0">Resident Information</p>
+                        <p class="display-2 text-default d-inline-block mb-0">Resident Information</p>
                     </div>
                 </div>
             </div>
@@ -162,81 +162,6 @@ Resident Information
     <div class="container-fluid mt--6">
         <div class="row">
             <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header border-0">
-                        <h4 class="card-title">Filed Cases</h4>
-                    </div>
-                    <div class="table-responsive">
-                        <!-- Projects table -->
-                        <table class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">Status</th>
-                                    <th scope="col">Title</th>
-                                    <th scope="col">Date Filed</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for record in data.record_patient %}
-                                <tr>
-                                    <th scope="row">
-                                        {{record.status.status}}
-                                    </th>
-                                    <td>
-                                        {{record.case_title}}
-                                    </td>
-                                    <td>
-                                        {{record.date_reported.strftime('%h %d %Y')}}
-                                    </td>
-                                    <td>
-                                        <a href="/admin/record/{{record.id}}" class="btn btn-sm btn-info"><i class="fa fa-eye"></i></a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header border-0">
-                        <h4 class="card-title">Appointments</h4>
-                    </div>
-                    <div class="table-responsive">
-                        <!-- Projects table -->
-                        <table class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">Case Title</th>
-                                    <th scope="col">Date of Hearing</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for record in data.record_patient %}
-                                    {% for appointment in record.records_appointments %}
-                                        <tr>
-                                            <th scope="row">
-                                                {{appointment.record.case_title}} ({{appointment.record.status.status}})
-                                            </th>
-                                            <td>
-                                                {{appointment.appointment.strftime('%h %d %Y')}}
-                                            </td>
-                                            <td>
-                                                <a href="/admin/appointment/{{appointment.id}}" class="btn btn-sm btn-info"><i class="fa fa-eye"></i></a>
-                                            </td>
-                                        </tr>
-                                    {% endfor %}
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div><div class="row">
-            <div class="col">
                 <div class="card">
                     <div class="card-header border-1">
                         <h4 class="card-title">Profile | Basic Info</h4>
@@ -286,13 +211,15 @@ Resident Information
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-4">
+                                    <div class="col-md-8">
                                         <div class="form-group">
                                             <label class="form-control-label">Email</label>
                                             <input type="text" class="form-control" value="{{data.email}}">
                                         </div>
                                     </div>
-                                    <div class="col-md-4">
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-8">
                                         <div class="form-group">
                                             <label class="form-control-label">Phone</label>
                                             <input type="text" class="form-control" value="{{data.phone}}">
@@ -300,7 +227,7 @@ Resident Information
                                     </div>
                                 </div>
                                 <div class="row">
-                                    <div class="col-md-8">
+                                    <div class="col-md-12">
                                         <div class="form-group">
                                             <label class="form-control-label">Address</label>
                                             <input type="text" class="form-control" value="{{data.address}}">
@@ -309,6 +236,50 @@ Resident Information
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <h4 class="card-title">Appointments</h4>
+                    </div>
+                    <div class="table-responsive">
+                        <!-- Projects table -->
+            
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">Appointment Date</th>
+                                    <th scope="col">Service</th>
+                                    <th scope="col">Status</th>
+                                    <th scope="col"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in data.account_appointments %}
+                                <tr id='appointment-{{appointment.id}}' data-id={{appointment.id}}>
+                                    <th scope="row">
+                                        {% if appointment.appointment_date is not none %}
+                                        {{appointment.appointment_date.strftime('%h %d %Y %I:%M %p')}}
+                                        {% else %}
+                                        None
+                                        {% endif %}
+                                        </td>
+                                    <td>
+                                        {{ appointment.service.service }}
+                                    </td>
+                                    <td>
+                                        {{ appointment.status.status }}
+                                    </td>
+                                    <td class="text-right">
+                                        <a href="/admin/appointment/{{appointment.id}}" class="btn btn-info btn-sm"><i
+                                                class="fa fa-eye"></i></a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
@@ -369,7 +340,7 @@ Resident Information
             'password': $('#password').val(),
             'birth_date': $('#birth_date').val(),
             'address': $('#address').val(),
-            'position': null
+            'occupation': null
         }
 
         $('#role_id_error').html('')

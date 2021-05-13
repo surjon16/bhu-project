@@ -1,0 +1,224 @@
+{% extends 'shared/layout.html' %}
+{% block title %}
+Services
+{% endblock %}
+
+{% block css %}{% endblock %}
+
+{% block modal %}
+<div class="modal fade" id="modal-service">
+    <div class="modal-dialog">
+        <div class="modal-content card bg-secondary shadow">
+            <div class="modal-header card-header bg-white border-0">
+                <h4 class="card-title">Service Info</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body card-body">
+                <div class="row">
+                    <input id="id" name="id" type="text" class="form-control " hidden value="-1">
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Service <span id="service_error" class="h5 text-danger"></span></label>
+                            <input id="service" name="service" type="text" class="form-control ">
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Availability <span id="availability_error" class="h5 text-danger"></span></label>
+                            <select id="availability" name="availability" data-style="bg-white px-4 py-3 shadow-sm" class="form-control selectpicker" data-live-search="true">
+                                <option value="1" selected>Morning Only</option>
+                                <option value="2" selected>Afternoon Only</option>
+                                <option value="3" selected>Both</option>
+                            </select>
+                        </div>
+                    </div>
+                </div> -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-success" onclick="SaveService()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block content %}
+<div class="main-content" id="panel">
+    <!-- Header -->
+    <div class="header pb-6">
+        <div class="container-fluid">
+            <div class="header-body">
+                <div class="row align-items-center py-4">
+                    <div class="col-lg-6 col-7">
+                        <p class="display-2 text-default d-inline-block mb-0">Services</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page content -->
+    <div class="container-fluid mt--6">
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-header border-0">
+                        <div class="row align-items-center">
+                            <button class="btn btn-sm btn-success" onclick="AddNewService()">Add New</button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <!-- Projects table -->
+                        <table class="table align-items-center table-flush">
+                            <thead class="thead-light">
+                                <tr>
+                                    <th scope="col">ID</th>
+                                    <th scope="col">Service</th>
+                                    <!-- <th scope="col">Availability</th> -->
+                                    <th scope="col" class="text-right">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for service in data.services %}
+                                <tr id='service-{{service.id}}' data-id={{service.id}}>
+                                    <th scope="row">
+                                        {{service.id}}
+                                    </th>
+                                    <td>
+                                        {{service.service}}
+                                    </td>
+                                    <!-- <td>
+                                        {% if service.availability == 1 %}
+                                            Morning Only
+                                        {% elif service.availability == 2 %}
+                                            Afternoon Only
+                                        {% else %}
+                                            Whole Day
+                                        {% endif %}
+                                    </td> -->
+                                    <td class="text-right">
+                                        <button onclick='EditService(this)' class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button>
+                                        <button onclick='DeleteService(this)' class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+
+    setSideBar('#menu-services')
+
+    var modal_service = '#modal-service'
+
+    var AddNewService = function () {
+
+        $('#service_error').html('')
+        $('#availability_error').html('')
+
+        $('#id').val('-1')
+        $('#service').val('')
+        $(".selectpicker").selectpicker('deselectAll');
+        $(".selectpicker").selectpicker('val', []);
+
+        
+        $(modal_service).modal({
+            "backdrop": "static",
+            "keyboard": true,
+            "show": true
+        })
+
+    }
+
+    var SaveService = function () {
+
+        $('#service_error').html('')
+        $('#availability_error').html('')
+
+        data = {
+            'id'            : $('#id').val(),
+            'service'       : $('#service').val(),
+            'availability'  : null //$('#availability').val()
+        }
+
+        Controller.POST('/api/service/upsert', data).done(function (result) {
+            console.log(result)
+            if (result.success) {
+                location.reload()
+            }
+            else {
+                if (result.errors.service) $('#service_error').html(result.errors.service)
+                if (result.errors.availability) $('#availability_error').html(result.errors.availability)
+            }
+        })
+
+    }
+
+    var EditService = function (e) {
+
+        $('#service_error').html('')
+        $('#availability_error').html('')
+
+        id = e.parentNode.parentNode.dataset.id
+
+        Controller.GET('/api/service/get/' + id, {}).done(function (result) {
+
+            console.log(result)
+
+            $('#id').val(result.id)
+            $('#service').val(result.service)
+            $('#availability').selectpicker('val', result.availability)
+
+            $(modal_service).modal({
+                "backdrop": "static",
+                "keyboard": true,
+                "show": true
+            })
+
+        })
+
+    }
+
+    var DeleteService = function (e) {
+
+        id = e.parentNode.parentNode.dataset.id
+
+        bootbox.confirm({
+            message: "Delete Service?",
+            buttons: {
+                confirm: {
+                    label: 'Delete',
+                    className: 'btn-sm btn-danger'
+                },
+                cancel: {
+                    label: 'Cancel',
+                    className: 'btn-sm btn-info'
+                }
+            },
+            callback: function (result) {
+                if (result) {
+
+                    Controller.POST('/api/service/delete', { 'id': id }).done(function (result) {
+                        if (result.success) e.parentNode.parentNode.remove()
+                    })
+
+                }
+            }
+        })
+    }
+
+</script>
+{% endblock %}

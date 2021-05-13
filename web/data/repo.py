@@ -1,18 +1,13 @@
-from data.models    import Accounts, Roles, Records, Appointments, Status, Notifications
+from data.models    import Accounts, Roles, Inventory, Appointments, Status, Notifications, Services
 from data           import db
 
 from flask_login    import login_user, current_user
-from sqlalchemy     import extract, or_, and_
+from sqlalchemy     import extract, or_, and_, func
+from sqlalchemy.sql import label
 from datetime       import datetime
 
 import requests, json
 import os
-
-from twilio.rest                import Client
-from twilio.http.http_client    import TwilioHttpClient
-
-# proxy_client = TwilioHttpClient()
-# proxy_client.session.proxies = {'https': os.environ['https_proxy']}
 
 itexmo_hdr = {'content-type': 'application/x-www-form-urlencoded'}
 itexmo_url = "https://www.itexmo.com/php_api/api.php"
@@ -40,9 +35,6 @@ class Repository:
 
     def readRegisteredAccounts():
         return Accounts.query.filter(Accounts.role_id.in_([1,2,3])).all()
-    
-    def readLuponAccounts():
-        return Accounts.query.filter(and_(Accounts.role_id==2, Accounts.position == 'Barangay Lupon')).all()
     
     def readResidentAccounts():
         return Accounts.query.filter(or_(Accounts.role_id.is_(None), Accounts.role_id == 3)).all()
@@ -87,7 +79,7 @@ class Repository:
                     address     = request['address'],
                     email       = request['email'],
                     password    = request['password'],
-                    position    = request['position'],
+                    occupation  = request['occupation'],
                     role_id     = int(request['role_id'])
                 )
             else:
@@ -101,7 +93,7 @@ class Repository:
                     birth_date  = birth_date,
                     address     = request['address'],
                     email       = request['email'],
-                    position    = request['position'],
+                    occupation  = request['occupation'],
                     role_id     = int(request['role_id'])
                 )
 
@@ -124,7 +116,7 @@ class Repository:
             data.birth_date  = birth_date
             data.address     = request['address']
             data.email       = request['email']
-            data.position    = request['position']
+            data.occupation  = request['occupation']
             data.role_id     = int(request['role_id'])
 
             if request['password']:
@@ -146,14 +138,8 @@ class Repository:
             for notification in data.account_notifications:
                 db.session.delete(notification)
 
-            # delete all filed cases
-            for record in data.record_patient:
-
-                # delete all appointments
-                for appointment in record.records_appointments:
-                    db.session.delete(appointment)
-                
-                db.session.delete(record)
+            for appointment in data.account_appointments:
+                db.session.delete(appointments)
 
             # finally, delete account
             db.session.delete(data)
@@ -162,93 +148,68 @@ class Repository:
             return True
 
     # ==================================================================================
-    # INCIDENTS
+    # RECORDS
     
     def readRecords():
-        return Records.query.all()
+        return Appointments.query.filter(Appointments.record_details.isnot(None)).order_by(Appointments.record_date.asc()).all()
 
     def readMonthlyRecords(date):
-        data = Records.query.filter(extract('year', Records.date_reported) == int(date[0:4]), extract('month', Records.date_reported) == int(date[5:])).all()
+        data = Appointments.query.filter(Appointments.record_details.isnot(None)).filter(extract('year', Appointments.record_date) == int(date[0:4]), extract('month', Appointments.record_date) == int(date[5:])).all()
         return data
 
     def readRecord(id):
-        return Records.query.filter_by(id=id).first()
+        return Appointments.query.filter_by(id=id).first()
+    
+    def searchRecords(id):
+        return Appointments.query.filter(Appointments.record_details.isnot(None)).filter_by(account_id=id).order_by(Appointments.record_date.asc()).all()
     
     def upsertRecord(request):
 
-        data = Records.query.filter_by(id=request['id']).first()
+        data = Appointments.query.filter_by(id=request['id']).first()
 
-        if data == None:
-
-            data = Records(
-                case_number     = request['case_number'],
-                case_title      = request['case_title'],
-                location        = request['location'],
-                narrative       = request['narrative'],
-                date_reported   = request['date_reported'],
-                date_record   = request['date_record'],
-                respondent      = request['respondent'],
-                status_id       = request['status_id']
-            )
-
-            db.session.add(data)
-
-            if request['patient'] is not None:  data.patient = Accounts.query.filter_by(id=request['patient']).first()
-
-        else:
-
-            data.case_number    = request['case_number']
-            data.case_title     = request['case_title']
-            data.location       = request['location']
-            data.narrative      = request['narrative']
-            data.respondent     = request['respondent']
-            data.date_reported  = request['date_reported']
-            data.date_record  = request['date_record']
-            data.status_id      = request['status_id']
-
-            if request['patient'] is not None:  data.patient = Accounts.query.filter_by(id=request['patient']).first()
+        data.record_number      = request['record_number']    
+        data.record_details     = request['record_details']    
+        data.record_date        = request['record_date']    
+        data.next_appointments  = request['next_appointments']    
 
         db.session.commit()
 
         return True
 
-    def updateRecordStatus(request):
-
-        data = Records.query.filter_by(id=request['id']).first()
-
-        if data == None:
-            return False
-        else:
-            data.status_id = request['status_id']
-            db.session.commit()
-            return True
-
-
     def deleteRecord(request):
 
-        data = Records.query.filter_by(id=request['id']).first()
+        data = Appointments.query.filter_by(id=request['id']).first()
 
-        if data == None:
-            return False
-        else:
-            
-            # delete all appointments
-            for appointment in data.records_appointments:
-                db.session.delete(appointment)
-            
-            db.session.delete(data)
-            db.session.commit()
-            
-            return True
+        data.record_number      = None
+        data.record_details     = None
+        data.record_date        = None
+        data.next_appointments  = None
+
+        db.session.commit()
+
+        return True
 
     # ==================================================================================
-    # SCHEDULES
+    # APPOINTMENTS
     
     def readAppointments():
-        return Appointments.query.all()
+        return Appointments.query.order_by(Appointments.status_id.desc(), Appointments.appointment_date.asc()).all()
     
+    def readDailyAppointments(date):
+        data = Appointments.query.filter(extract('month', Appointments.appointment_date) == int(date[0:2]), extract('day', Appointments.appointment_date) == int(date[3:5]), extract('year', Appointments.appointment_date) == int(date[6:])).order_by(Appointments.status_id.desc(), Appointments.appointment_date.asc()).all()
+        return data
+
     def readAppointment(id):
         return Appointments.query.filter_by(id=id).first()
+
+    def updateAppointmentStatus(request):
+
+        data = Appointments.query.filter_by(id=request['id']).first()
+        data.status_id = request['status_id']
+
+        db.session.commit()
+
+        return True
 
     def upsertAppointment(request):
 
@@ -256,46 +217,40 @@ class Repository:
 
         if data == None:
             data = Appointments(
-                details     = request['details'],
-                appointment    = request['appointment'],
-                record_id = request['record_id'],
-                lupon       = request['assigned_lupon']
-                # created_by  = request['created_by']
+                details             = request['details'],
+                appointment_date    = request['appointment_date'],
+                assigned            = request['assigned'],
+                account_id          = request['account_id'],
+                service_id          = request['service_id'],
+                status_id           = request['status_id']
             )
             db.session.add(data)
 
         else:
-            data.details     = request['details']
-            data.appointment    = request['appointment']
-            data.record_id = request['record_id']
-            # data.created_by  = request['created_by']
-            data.lupon       = request['assigned_lupon']
+
+            data.details             = request['details']
+            data.appointment_date    = request['appointment_date']
+            data.assigned            = request['assigned']
+            data.account_id          = request['account_id']
+            data.service_id          = request['service_id']
+            data.status_id           = request['status_id']
                 
         db.session.commit()
 
         # =============================================================================================================
-        # Create a notification after creating a appointment
-        content = request['details']
-        notifs = Notifications(content=content, notif_type='app', account_id=data.record.patient.id)
+        # Create a notification after creating an appointment
+
+        content = 'Hi, ' + str(data.account.first_name) + '. This is from the Barangay Gusa Health Center. We would like to inform you that your requested appointment for ' + str(data.service.service) + ' on ' + str(data.appointment_date.strftime('%h %d %Y %I:%M %p')) + ' is now ' + str(data.status.status) + '. Thank you!'
+
+        notifs = Notifications(content=content, notif_type='app', account_id=data.account.id)
         db.session.add(notifs)
         db.session.commit()
 
-        # Set account details
-        # account_sid = 'AC9d6e97214085f5b8a7e31001dd8a0ba1'
-        # client = Client(account_sid, auth_token, http_client=proxy_client)
-        # client = Client(account_sid, auth_token)
-        
         try:
             
             # Send an sms to the patient.
-            # message = client.messages.create(
-            #     body=content,
-            #     from_='+17542192549', 
-            #     to=data.record.patient.phone
-            # )
-            
             sms = {
-                '1'         : data.record.patient.phone,
+                '1'         : data.account.phone,
                 '2'         : content,
                 '3'         : 'ST-LEONE670607_8GLTB',
                 'passwd'    : 'm6}}ktrp{{'
@@ -303,38 +258,12 @@ class Repository:
             response = requests.post(url=itexmo_url, data=sms)
             print(response.text)
 
-            # Send an sms to the staff.
-            staff = Accounts.query.filter(Accounts.role_id==2).all()
-            for account in staff:
-
-                if str(account.id) in data.lupon:
-
-                    # Create notif for each staff
-                    notifs = Notifications(content=content, notif_type='app', account_id=account.id)
-                    db.session.add(notifs)
-                    db.session.commit()
-
-                    # message = client.messages.create(
-                    #     body=content,
-                    #     from_='+17542192549',
-                    #     to=account.phone
-                    # )
-
-                    sms = {
-                        '1'         : account.phone,
-                        '2'         : content,
-                        '3'         : 'ST-LEONE670607_8GLTB',
-                        'passwd'    : 'm6}}ktrp{{'
-                    }
-                    response = requests.post(url=itexmo_url, data=sms)
-                    print(response.text)
-                    
-            # =============================================================================================================
-        
         except:
-
+            
             return True
 
+        # =============================================================================================================
+        
         return True
 
     def deleteAppointment(request):
@@ -349,18 +278,77 @@ class Repository:
             return True
 
     # ==================================================================================
-    # HEARING
+    # INVENTORY
 
-    def upsertHearing(request):
+    def readInventories():
+        return Inventory.query.all()
 
-        data = Appointments.query.filter_by(id=request['id']).first()
+    def readAvailableItems():
+        return Inventory.query.filter_by(status_id=5).group_by(Inventory.item).all()
 
-        data.minutes            = request['minutes']
-        data.record.status_id = request['status_id']
-                
+    def readUsedItems():
+        return Inventory.query.filter_by(status_id=6).group_by(Inventory.item).all()
+
+    def readExpiredItems():
+        return Inventory.query.filter_by(status_id=7).group_by(Inventory.item).all()
+
+    def readInventoriesGroupByItemAndStatus():
+        return db.session.query(Inventory.item, Inventory.status_id, label('status', func.sum(Inventory.quantity))).group_by(Inventory.item, Inventory.status_id).all()
+
+    def readInventoriesGroupByItem():
+        return db.session.query(Inventory.item, label('total_stocks', func.sum(Inventory.quantity))).group_by(Inventory.item).all()
+
+    def readInventory(id):
+        return Inventory.query.filter_by(id=id).first()
+
+    # def bulkUpsertInventory(request):
+
+    def upsertInventory(request):
+
+        data = Inventory.query.filter_by(id=request['id']).first()
+
+        expiry_date = request['expiry_date']
+        try:
+            expiry_date = datetime.strptime(expiry_date, '%m/%d/%Y').strftime('%Y-%m-%d')
+        except ValueError:
+            expiry_date = None
+
+        receive_date = request['receive_date']
+        try:
+            receive_date = datetime.strptime(receive_date, '%m/%d/%Y').strftime('%Y-%m-%d')
+        except ValueError:
+            receive_date = None
+
+        if data == None:
+            data = Inventory(
+                item            = request['item'],
+                # expiry_date     = expiry_date,
+                # receive_date    = receive_date,
+                quantity        = request['quantity'],
+                status_id       = request['status_id']
+            )
+            db.session.add(data)
+        else:
+            data.item           = request['item']
+            # data.expiry_date     = expiry_date
+            # data.receive_date    = receive_date
+            data.quantity       = request['quantity']
+            data.status_id      = request['status_id']
+
         db.session.commit()
 
         return True
+
+    def deleteInventory(request):
+
+        data = Inventory.query.filter_by(id=request['id']).first()
+        
+        if data == None:
+            return False
+        else:
+            db.session.delete(data)
+            db.session.commit()
+            return True
 
     # ==================================================================================
     # ROLES
@@ -390,6 +378,44 @@ class Repository:
     def deleteRole(request):
 
         data = Roles.query.filter_by(id=request['id']).first()
+
+        if data == None:
+            return False
+        else:
+            db.session.delete(data)
+            db.session.commit()
+            return True
+
+    # ==================================================================================
+    # SERVICE
+
+    def readServices():
+        return Services.query.all()
+
+    def readService(id):
+        return Services.query.filter_by(id=id).first()
+
+    def upsertService(request):
+
+        data = Services.query.filter_by(id=request['id']).first()
+
+        if data == None:
+            data = Services(
+                service         = request['service'],
+                availability    = request['availability']
+            )
+            db.session.add(data)
+        else:
+            data.service        = request['service']
+            data.availability   = request['availability']
+
+        db.session.commit()
+
+        return True
+
+    def deleteService(request):
+
+        data = Services.query.filter_by(id=request['id']).first()
 
         if data == None:
             return False
@@ -489,6 +515,9 @@ class Repository:
         status = Status(status='Cancelled')
         db.session.add(status)
 
+        status = Status(status='Pending')
+        db.session.add(status)
+
         status = Status(status='Available')
         db.session.add(status)
 
@@ -511,7 +540,7 @@ class Repository:
             address     = 'CDO',
             email       = 'admin@gmail.com',
             password    = 'admin1234',
-            position    = 'Barangay Health Worker',
+            occupation    = 'Barangay Health Worker',
             role_id     = 1
         )
         db.session.add(account)
@@ -527,11 +556,17 @@ class Repository:
             address     = 'CDO',
             email       = 'patient@gmail.com',
             password    = 'admin1234',
-            position    = '',
+            occupation    = '',
             role_id     = 3
         )
         db.session.add(account)
 
+        # create service
+
+        service = Services(
+            service  = 'Immunize'
+        )
+        db.session.add(service)
 
         db.session.commit()
 

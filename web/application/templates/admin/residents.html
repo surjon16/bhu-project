@@ -138,12 +138,12 @@ Resident Information
 {% block content %}
 <div class="main-content" id="panel">
     <!-- Header -->
-    <div class="header bg-primary pb-6">
+    <div class="header pb-6">
         <div class="container-fluid">
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <p class="display-2 text-white d-inline-block mb-0">Resident Information</p>
+                        <p class="display-2 text-default d-inline-block mb-0">Resident Information</p>
                     </div>
                 </div>
             </div>
@@ -168,12 +168,12 @@ Resident Information
                                             {% endif %}
                                         {% endfor %}
                                     </select>
-                                    <button class="btn btn-sm btn-primary" type="submit">Search</button>
+                                    <button class="btn btn-sm btn-success" type="submit">Search</button>
 
                                 </form>
                             </div>
                             <div class="col text-right">
-                                <button class="btn btn-sm btn-primary" onclick="AddNew()">Add New</button>
+                                <button class="btn btn-sm btn-success" onclick="AddNew()">Add New</button>
                             </div>
                         </div>
                     </div>
@@ -282,7 +282,7 @@ Resident Information
             'password'      : $('#password').val(),
             'birth_date'    : $('#birth_date').val(),
             'address'       : $('#address').val(),
-            'position'      : null
+            'occupation'      : null
         }
 
         $('#role_id_error').html('')

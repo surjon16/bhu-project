@@ -115,103 +115,92 @@ class RegisterAccountSchema(Schema):
 
 class CreateRecordSchema(Schema):
     
-    case_number     = fields.Str(required=True)
-    case_title      = fields.Str(required=True)
-    location        = fields.Str(required=True)
-    narrative       = fields.Str(required=True)
-    date_reported   = fields.Str(required=True)
-    date_record   = fields.Str(required=True)
-    status_id       = fields.Str(required=True)
-    patient     = fields.Str(required=True)
-    respondent      = fields.Str(required=True)
+    record_number   = fields.Str(required=True)
+    record_details  = fields.Str(required=True)
+    record_date   = fields.Str(required=True)
     
-    @validates('case_number')
-    def validate_case_number(self, value):
+    @validates('record_number')
+    def validate_record_number(self, value):
         if value == '' or value is None:
-            raise ValidationError('Please provide a case number.')
+            raise ValidationError('Please provide a record number.')
 
-    @validates('case_title')
-    def validate_case_title(self, value):
+    @validates('record_details')
+    def validate_record_details(self, value):
         if value == '' or value is None:
-            raise ValidationError('Please provide a case title.')
+            raise ValidationError('Please provide the details.')
 
-    @validates('location')
-    def validate_location(self, value):
+    @validates('record_date')
+    def validate_record_date(self, value):
         if value == '' or value is None:
-            raise ValidationError('Please provide a location.')
-
-    @validates('narrative')
-    def validate_narrative(self, value):
-        if value == '' or value is None:
-            raise ValidationError('Please provide a narrative.')
-
-    @validates('patient')
-    def validate_patient(self, value):
-        if value == '' or value is None:
-            raise ValidationError('Please specify the patient.')
-
-    @validates('respondent')
-    def validate_respondent(self, value):
-        if value == '' or value is None:
-            raise ValidationError('Please specify the respondent.')
-
-    @validates('status_id')
-    def validate_status_id(self, value):
-        if value == '' or value is None:
-            raise ValidationError('Please specify the status.')
-
-    @validates('date_reported')
-    def validate_date_reported(self, value):
-        if value == '' or value is None:
-            raise ValidationError('Please specify the date reported.')
-
-    @validates('date_record')
-    def validate_date_record(self, value):
-        if value == '' or value is None:
-            raise ValidationError('Please specify the date of record.')
+            raise ValidationError('Please specify the date.')
 
 
 class CreateAppointmentSchema(Schema):
     
     details             = fields.Str(required=True)
-    appointment            = fields.Str(required=True)
-    record_id         = fields.Str(required=True)
-    assigned_lupon_1    = fields.Str(required=True)
+    appointment_date    = fields.Str(required=True)
+    account_id          = fields.Str(required=True)
+    status_id           = fields.Str(required=True)
+    service_id          = fields.Str(required=True)
     
     @validates('details')
     def validate_details(self, value):
         if value == '' or value is None:
             raise ValidationError('Please provide details.')
 
-    @validates('appointment')
-    def validate_appointment(self, value):
+    @validates('appointment_date')
+    def validate_appointment_date(self, value):
         if value == '' or value is None:
-            raise ValidationError('Please provide a appointment.')
+            raise ValidationError('Please provide an appointment.')
 
-    @validates('record_id')
-    def validate_record_id(self, value):
+    @validates('account_id')
+    def validate_account_id(self, value):
         if value == '' or value is None:
-            raise ValidationError('Please select a case to set appointment.')
-
-    @validates('assigned_lupon_1')
-    def validate_assigned_lupon_1(self, value):
-        if value == '' or value is None:
-            raise ValidationError('Please assign a lupon for this appointment.')
-
-class CreateHearingSchema(Schema):
-
-    minutes     = fields.Str(required=True)
-    status_id   = fields.Str(required=True)
-
-    @validates('minutes')
-    def validate_minutes(self, value):
-        if value == '' or value is None:
-            raise ValidationError('Please provide the minutes of hearing.')
+            raise ValidationError('Please select an account for this appointment.')
 
     @validates('status_id')
     def validate_status_id(self, value):
         if value == '' or value is None:
-            raise ValidationError('Please specify the status of the case.')
+            raise ValidationError('Please select a status.')
+
+    @validates('service_id')
+    def validate_service_id(self, value):
+        if value == '' or value is None:
+            raise ValidationError('Please select a service.')
+
+class CreateServiceSchema(Schema):
+
+    service         = fields.Str(required=True)
+    availability    = fields.Str(required=True)
+
+    @validates('service')
+    def validate_service(self, value):
+        if value == '' or value is None:
+            raise ValidationError('Please provide a service name.')
+
+    # @validates('availability')
+    # def validate_availability(self, value):
+    #     if value == '' or value is None:
+    #         raise ValidationError('Please specify the availability.')
 
 
- 
+class CreateInventorySchema(Schema):
+
+    item            = fields.Str(required=True)
+    quantity        = fields.Str(required=True)
+    # expiry_date     = fields.Str(required=True)
+
+    @validates('item')
+    def validate_item(self, value):
+        if value == '' or value is None:
+            raise ValidationError('Please provide an item name.')
+
+    @validates('quantity')
+    def validate_quantity(self, value):
+        if value == '' or value is None:
+            raise ValidationError('Please indicate the quantity.')
+
+    # @validates('expiry_date')
+    # def validate_expiry_date(self, value):
+    #     if value == '' or value is None:
+    #         raise ValidationError('Please specify the expiry date.')
