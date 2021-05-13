@@ -17,11 +17,11 @@
 
 </head>
 
-<body class="bg-default">
+<body class="bg-secondary">
 
     <div class="main-content">
     
-        <div class="header bg-gradient-success py-7 py-lg-8">
+        <div class="header bg-secondary py-7 py-lg-8">
             <div class="container">
                 <div class="header-body text-center mb-3">
                     <div class="row justify-content-center">
@@ -33,17 +33,20 @@
             <div class="separator separator-bottom separator-skew zindex-100">
                 <svg x="0" y="0" viewBox="0 0 2560 100" preserveAspectRatio="none" version="1.1"
                     xmlns="http://www.w3.org/2000/svg">
-                    <polygon class="fill-default" points="2560 0 2560 100 0 100"></polygon>
+                    <polygon class="fill-secondary" points="2560 0 2560 100 0 100"></polygon>
                 </svg>
             </div>
         </div>
     
         <div class="container mt--8 pb-5">
             <div class="row justify-content-center">
-                <div class="col-lg-5 col-md-7">
+                <div class="col-lg-5 col-md-5 order-lg-2">
+                    <img class="card-img-top" style="height: 60;" src="/static/img/logo-transparent-lg.jpg">
+                </div>
+                <div class="col-lg-5 col-md-7 order-lg-1">
                     <div class="card bg-secondary shadow border-0">
                         <div class="card-header text-center">
-                            <h1>Login to your Account</h1>
+                            <h2>Login to your Account</h2>
                         </div>
                         <div class="card-body px-lg-5 py-lg-5">
                             <form class="form" method="post" action="{{url_for('login')}}">
