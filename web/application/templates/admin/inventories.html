@@ -41,14 +41,14 @@ Inventory
                         </div>
                     </div>
                 </div>
-                <!-- <div class="row">
+                <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
                             <label class="form-control-label">Expiry <span id="expiry_date_error" class="h5 text-danger"></span></label> 
                             <input id="expiry_date" name="expiry_date" type="text" class="form-control datepicker">
                         </div>
                     </div>
-                </div> -->
+                </div>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
@@ -156,13 +156,13 @@ Inventory
         $('#id').val('-1')
         $('#item').val('')
         $('#quantity').val('')
-        // $('#expiry_date').val('')
+        $('#expiry_date').val('')
         // $('#receive_date').val("{{data.current_date.strftime('%m/%d/%Y')}}")
         $(".selectpicker").selectpicker('deselectAll');
         $(".selectpicker").selectpicker('val', 5);
 
         $('#item_error').html('')
-        // $('#expiry_date_error').html('')
+        $('#expiry_date_error').html('')
         // $('#receive_date_error').html('')
         $('#quantity_error').html('')
         $('#status_id_error').html('')
@@ -178,7 +178,7 @@ Inventory
     var SaveInventory = function () {
 
         $('#item_error').html('')
-        // $('#expiry_date_error').html('')
+        $('#expiry_date_error').html('')
         // $('#receive_date_error').html('')
         $('#quantity_error').html('')
         $('#status_id_error').html('')
@@ -186,7 +186,7 @@ Inventory
         data = {
             'id'            : $('#id').val(),
             'item'          : $('#item').val(),
-            'expiry_date'   : null, //$('#expiry_date').val(),
+            'expiry_date'   : $('#expiry_date').val(),
             'receive_date'  : null, //$('#receive_date').val(), 
             'quantity'      : $('#quantity').val(),
             'status_id'     : $('#status_id').val()
@@ -199,7 +199,7 @@ Inventory
             }
             else {
                 if (result.errors.item) $('#item_error').html(result.errors.item)
-                // if (result.errors.expiry_date) $('#expiry_date_error').html(result.errors.expiry_date)
+                if (result.errors.expiry_date) $('#expiry_date_error').html(result.errors.expiry_date)
                 // if (result.errors.receive_date) $('#receive_date_error').html(result.errors.receive_date)
                 if (result.errors.quantity) $('#quantity_error').html(result.errors.quantity)
                 if (result.errors.status_id) $('#status_id_error').html(result.errors.status_id)
@@ -210,11 +210,17 @@ Inventory
 
     var EditInventory = function (id) {
 
+        $('#item_error').html('')
+        $('#expiry_date_error').html('')
+        // $('#receive_date_error').html('')
+        $('#quantity_error').html('')
+        $('#status_id_error').html('')
+
         Controller.GET('/api/inventory/get/' + id, {}).done(function (result) {
 
             $('#id').val(result.id)
             $('#item').val(result.item)
-            // $('#expiry_date').val(result.expiry_date)
+            $('#expiry_date').val(result.expiry_date)
             // $('#receive_date').val(result.receive_date)
             $('#quantity').val(result.quantity)
             $("#status_id").selectpicker('val', result.status_id)

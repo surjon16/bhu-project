@@ -119,6 +119,9 @@ class Inventory(db.Model):
     expiry_date     = db.Column(db.DateTime)
     receive_date    = db.Column(db.DateTime)
     quantity        = db.Column(db.Integer)
+    min_quantity    = db.Column(db.Integer)
+    max_quantity    = db.Column(db.Integer)
+    reorder_level   = db.Column(db.Integer)
     
     # timestamps
     created_at  = db.Column(db.DateTime, default=db.func.current_timestamp())
@@ -132,11 +135,15 @@ class Inventory(db.Model):
             'id'            : self.id,
             'item'          : self.item,
             'quantity'      : self.quantity,
+            'min_quantity'  : self.min_quantity,
+            'max_quantity'  : self.max_quantity,
+            'reorder_level' : self.reorder_level,
             'expiry_date'   : self.expiry_date.strftime('%m/%d/%Y') if self.expiry_date is not None else None,
             'receive_date'  : self.receive_date.strftime('%m/%d/%Y') if self.receive_date is not None else None,
             'status'        : self.status.status,
             'status_id'     : self.status.id
         }
+
 
 class Roles(db.Model):
 

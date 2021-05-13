@@ -322,7 +322,7 @@ class Repository:
         if data == None:
             data = Inventory(
                 item            = request['item'],
-                # expiry_date     = expiry_date,
+                expiry_date     = expiry_date,
                 # receive_date    = receive_date,
                 quantity        = request['quantity'],
                 status_id       = request['status_id']
@@ -330,7 +330,7 @@ class Repository:
             db.session.add(data)
         else:
             data.item           = request['item']
-            # data.expiry_date     = expiry_date
+            data.expiry_date    = expiry_date
             # data.receive_date    = receive_date
             data.quantity       = request['quantity']
             data.status_id      = request['status_id']

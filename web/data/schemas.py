@@ -188,7 +188,7 @@ class CreateInventorySchema(Schema):
 
     item            = fields.Str(required=True)
     quantity        = fields.Str(required=True)
-    # expiry_date     = fields.Str(required=True)
+    expiry_date     = fields.Str(required=True)
 
     @validates('item')
     def validate_item(self, value):
@@ -200,7 +200,7 @@ class CreateInventorySchema(Schema):
         if value == '' or value is None:
             raise ValidationError('Please indicate the quantity.')
 
-    # @validates('expiry_date')
-    # def validate_expiry_date(self, value):
-    #     if value == '' or value is None:
-    #         raise ValidationError('Please specify the expiry date.')
+    @validates('expiry_date')
+    def validate_expiry_date(self, value):
+        if value == '' or value is None:
+            raise ValidationError('Please specify the expiry date.')
