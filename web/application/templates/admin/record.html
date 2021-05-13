@@ -1,9 +1,65 @@
 {% extends 'shared/layout.html' %}
 {% block title %}
-Case Records
+Medical Record
 {% endblock %}
 
 {% block css %}{% endblock %}
+
+{% block modal %}
+<div class="modal fade" id="modal-default">
+    <div class="modal-dialog">
+        <div class="modal-content card bg-secondary shadow">
+            <div class="modal-header card-header bg-white border-0">
+                <h4 class="card-title">Appointment Information</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body card-body">
+                <div class="row">
+                    <input id="id" name="id" type="text" class="form-control " hidden value="-1">
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Record Number <span id="record_id_error"
+                                    class="h5 text-danger"></span></label>
+                            <select id="record_id" name="record_id" data-style="bg-white px-4 py-3 shadow-sm"
+                                class="form-control  selectpicker" data-live-search="true">
+                                {% for record in data.record.records %}
+                                <option value="{{record.id}}">{{record.record_number}} ({{record.case_title}} at
+                                    {{record.location}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Details <span id="details_error"
+                                    class="h5 text-danger"></span></label>
+                            <textarea type="text" class="form-control "
+                                rows="12">{{ data.record.details }}</textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label for="appointment" class="form-control-label">Appointment <span id="appointment_error"
+                                    class="h5 text-danger"></span></label>
+                            <input class="form-control " type="datetime-local" id="appointment">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-success" onclick="Save()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
 
 {% block content %}
 <div class="main-content" id="panel">
@@ -13,7 +69,7 @@ Case Records
             <div class="header-body">
                 <div class="row align-items-center py-4">
                     <div class="col-lg-6 col-7">
-                        <p class="display-2 text-default d-inline-block mb-0">Case Record</p>
+                        <p class="display-2 text-default d-inline-block mb-0">Medical Record</p>
                     </div>
                 </div>
             </div>
@@ -28,8 +84,7 @@ Case Records
                     <div class="card-header border-1">
                         <div class="row align-items-center">
                             <div class="col text-left">
-                                <!-- <button class="btn btn-sm btn-success" onclick="AddNew()">Add New</button> -->
-                                <h4 class="card-title">Case Details</h4>
+                                <h4 class="card-title">Medical Record</h4>
                             </div>
                         </div>
                     </div>
@@ -37,58 +92,70 @@ Case Records
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-control-label">Case Title</label>
-                                    <input type="text" class="form-control" value="{{data.record.case_title}}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
                                     <label class="form-control-label">Record Number</label>
                                     <input type="text" class="form-control" value="{{data.record.record_number}}">
                                 </div>
                             </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-group">
-                                    <label class="form-control-label">Facts of the Complaint</label>
-                                    <textarea id="narrative" name="narrative" type="text" class="form-control" rows="20">{{data.record.narrative}}</textarea>
+                                    <label for="record_date" class="form-control-label">Date Recorded</label>
+                                    <input class="form-control" type="text" value="{{data.record.record_date}}">
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
-                                <div class="form-group">
-                                    <label class="form-control-label">Case Location</label>
-                                    <input type="text" class="form-control" value="{{data.record.location}}">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="date_record" class="form-control-label">Record Date</label>
-                                    <input class="form-control" type="text" value="{{data.record.date_record}}">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="date_recorded" class="form-control-label">Date Reported</label>
-                                    <input class="form-control" type="text" value="{{data.record.date_recorded}}">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label class="form-control-label">Patient</label>
-                                    <input class="form-control" type="text" value="{{data.record.patient.first_name}} {{data.record.patient.last_name}}">
+                                    <input class="form-control" type="text"
+                                        value="{{data.record.account.first_name}} {{data.record.account.last_name}}">
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
                                 <div class="form-group">
-                                    <label class="form-control-label">Respondent</label>
-                                    <input type="text" class="form-control" value="{{data.record.respondent}}">
+                                    <label class="form-control-label">Details</label>
+                                    <textarea type="text" class="form-control "
+                                        rows="20">{{ data.record.record_details }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header border-1">
+                        <div class="row align-items-center">
+                            <div class="col text-left">
+                                <!-- <button class="btn btn-sm btn-success" onclick="AddNew()">Add New</button> -->
+                                <h4 class="card-title">Appointment Details</h4>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-control-label">Details</label>
+                                    <textarea type="text" class="form-control" rows="10">{{ data.record.details }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-control-label">Date</label>
+                                    <input class="form-control" type="text" value="{{data.record.appointment_date}}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-control-label">Service</label>
+                                    <input class="form-control" type="text" value="{{data.record.service.service}}">
                                 </div>
                             </div>
                         </div>
@@ -103,48 +170,6 @@ Case Records
                     </div>
                 </div>
             </div>
-            <div class="col-md-6">
-                <div class="card">
-                    <div class="card-header border-0">
-                        <h4 class="card-title">Appointmentd Mediation</h4>
-                    </div>
-                    <div class="table-responsive">
-                        <!-- Projects table -->
-                        <table class="table align-items-center table-flush">
-                            <thead class="thead-light">
-                                <tr>
-                                    <th scope="col">Appointment</th>
-                                    <th scope="col">Assigned Lupon</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for appointment in data.record.records_appointments %}
-                                <tr id='appointment-{{appointment.id}}' data-id={{appointment.id}}>
-                                    <td>
-                                        {% if appointment.appointment is not none %}
-                                            {{appointment.appointment.strftime('%h %d %Y %I:%M %p')}}
-                                        {% else %}
-                                            None
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {% for lupon in data.lupon %}
-                                            {% if lupon.id | string in appointment.lupon %}
-                                                {{lupon.first_name}} {{lupon.last_name}} <br>
-                                            {% endif %}
-                                        {% endfor %}
-                                    </td>
-                                    <td class="text-right">
-                                        <a href="/admin/appointment/{{appointment.id}}" class="btn btn-sm btn-info"><i class="fa fa-eye"></i></a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -154,152 +179,6 @@ Case Records
 <script>
 
     setSideBar('#menu-records')
-
-    var modal = '#modal-default'
-
-    var AddNew = function () {
-
-        // $('#record_number_error').html('')
-        $('#case_title_error').html('')
-        $('#location_error').html('')
-        $('#narrative_error').html('')
-        $('#date_recorded_error').html('')
-        $('#date_record_error').html('')
-        $('#status_id_error').html('')
-        $('#patient_error').html('')
-        $('#respondent_error').html('')
-
-        $('#id').val('-1')
-        $('#record_number').val('{{((data.record.records|length + 1)|string).zfill(4)}} -- {{now.year}}')
-        $('#case_title').val('')
-        $('#location').val('')
-        $('#narrative').val('')
-        $('#date_recorded').val('')
-        $('#date_record').val('')
-        $('#status_id').val('')
-        $('#patient').val('')
-        $('#respondent').val('')
-
-        $(modal).modal({
-            "backdrop": "static",
-            "keyboard": true,
-            "show": true
-        })
-
-    }
-
-    var Save = function () {
-
-        $('#record_number_error').html('')
-        $('#case_title_error').html('')
-        $('#location_error').html('')
-        $('#narrative_error').html('')
-        $('#date_recorded_error').html('')
-        $('#date_record_error').html('')
-        $('#status_id_error').html('')
-        $('#patient_error').html('')
-        $('#respondent_error').html('')
-
-        data = {
-            'id': $('#id').val(),
-            'record_number': $('#record_number').val(),
-            'case_title': $('#case_title').val(),
-            'location': $('#location').val(),
-            'narrative': $('#narrative').val(),
-            'date_recorded': $('#date_recorded').val(),
-            'date_record': $('#date_record').val(),
-            'status_id': $('#status_id').val(),
-            'patient': $('#patient').val(),
-            'respondent': $('#respondent').val()
-        }
-
-        Controller.POST('/api/record/upsert', data).done(function (result) {
-            console.log(result)
-            if (result.success == true) {
-                location.reload()
-            }
-            else {
-
-                if (result.errors.record_number) $('#record_number_error').html(result.errors.record_number)
-                if (result.errors.case_title) $('#case_title_error').html(result.errors.case_title)
-                if (result.errors.location) $('#location_error').html(result.errors.location)
-                if (result.errors.narrative) $('#narrative_error').html(result.errors.narrative)
-                if (result.errors.date_recorded) $('#date_recorded_error').html(result.errors.date_recorded)
-                if (result.errors.date_record) $('#date_record_error').html(result.errors.date_record)
-                if (result.errors.status_id) $('#status_id_error').html(result.errors.status_id)
-                if (result.errors.patient) $('#patient_error').html(result.errors.patient)
-                if (result.errors.respondent) $('#respondent_error').html(result.errors.respondent)
-
-            }
-
-        })
-
-    }
-
-    var Edit = function (e) {
-
-        $('#record_number_error').html('')
-        $('#case_title_error').html('')
-        $('#location_error').html('')
-        $('#narrative_error').html('')
-        $('#date_recorded_error').html('')
-        $('#date_record_error').html('')
-        $('#status_id_error').html('')
-        $('#patient_error').html('')
-        $('#respondent_error').html('')
-
-        id = e.parentNode.parentNode.dataset.id
-
-        Controller.GET('/api/record/get/' + id, {}).done(function (result) {
-
-            $('#id').val(result.id)
-            $('#record_number').val(result.record_number)
-            $('#case_title').val(result.case_title)
-            $('#location').val(result.location)
-            $('#narrative').val(result.narrative)
-            $('#date_recorded').val(result.date_recorded)
-            $('#date_record').val(result.date_record)
-            $('#status_id').val(result.status_id)
-            $('#patient').val(result.patient_id)
-            $('#respondent').val(result.respondent)
-
-            $(modal).modal({
-                "backdrop": "static",
-                "keyboard": true,
-                "show": true
-            })
-
-        })
-
-    }
-
-    var Delete = function (e) {
-
-        id = e.parentNode.parentNode.dataset.id
-
-        bootbox.confirm({
-            message: "Delete case? All appointments set for this case will be lost.",
-            buttons: {
-                confirm: {
-                    label: 'Delete',
-                    className: 'btn-sm btn-danger'
-                },
-                cancel: {
-                    label: 'Cancel',
-                    className: 'btn-sm btn-info'
-                }
-            },
-            callback: function (result) {
-                if (result) {
-
-                    Controller.POST('/api/record/delete', { 'id': id }).done(function (result) {
-                        if (result.success) e.parentNode.parentNode.remove()
-                    })
-
-                }
-            }
-        })
-    }
 
 </script>
 {% endblock %}
