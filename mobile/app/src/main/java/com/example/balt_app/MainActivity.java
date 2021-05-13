@@ -37,8 +37,8 @@ import java.util.TimerTask;
 
 public class MainActivity extends AppCompatActivity {
 
-//    String url = "https://vincentcubillan.pythonanywhere.com";
-    String url = "http://192.168.110.102:8080";
+    String url = "https://roannie.pythonanywhere.com";
+//    String url = "http://192.168.110.102:8080";
 
     NotificationCompat.Builder nt;
     NotificationManagerCompat nmc;
