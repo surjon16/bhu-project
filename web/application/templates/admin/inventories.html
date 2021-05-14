@@ -15,24 +15,17 @@ Inventory
             </div>
             <div class="modal-body card-body">
                 <div class="row">
-                    <input id="id" name="id" type="text" class="form-control " hidden value="-1">
-                </div>
-                <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
-                            <label class="form-control-label">Item <span id="item_error" class="h5 text-danger"></span></label>
-                            <input id="item" name="item" type="text" class="form-control ">
+                            <label class="form-control-label">Item <span id="inventory_id_error" class="h5 text-danger"></span></label>
+                            <select id="inventory_id" name="inventory_id" data-style="bg-white px-4 py-3 shadow-sm" class="form-control  selectpicker" data-live-search="true">
+                                {% for inventory in data.inventories %}
+                                    <option value="{{inventory.id}}">({{inventory.item_code}}) {{inventory.item}}</option>
+                                {% endfor %}
+                            </select>
                         </div>
                     </div>
                 </div>
-                <!-- <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="form-control-label">Date Received <span id="receive_date_error" class="h5 text-danger"></span></label> 
-                            <input id="receive_date" name="receive_date" type="text" class="form-control datepicker">
-                        </div>
-                    </div>
-                </div> -->
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
@@ -71,6 +64,65 @@ Inventory
         </div>
     </div>
 </div>
+<div class="modal fade" id="modal-item">
+    <div class="modal-dialog">
+        <div class="modal-content card bg-secondary shadow">
+            <div class="modal-header card-header bg-white border-0">
+                <h4 class="card-title">Item Info</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body card-body">
+                <div class="row">
+                    <input id="item_id" name="item_id" type="text" class="form-control " hidden value="-1">
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Item Code <span id="item_code_error" class="h5 text-danger"></span></label>
+                            <input id="item_code" name="item_code" type="text" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Item Name <span id="item_error" class="h5 text-danger"></span></label>
+                            <input id="item" name="item" type="text" class="form-control">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Minimum Quantity <span id="min_quantity_error" class="h5 text-danger"></span></label>
+                            <input id="min_quantity" name="min_quantity" type="number" min="1" class="form-control" value="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Maximum Quantity <span id="max_quantity_error" class="h5 text-danger"></span></label>
+                            <input id="max_quantity" name="max_quantity" type="number" min="1" class="form-control" value="1">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            <label class="form-control-label">Reorder Level <span id="reorder_level_error" class="h5 text-danger"></span></label>
+                            <input id="reorder_level" name="reorder_level" type="number" min="1" class="form-control" value="1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
+                <button class="btn btn-sm btn-success" onclick="SaveItem()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
 {% endblock %}
 
 {% block content %}
@@ -100,7 +152,8 @@ Inventory
                                 <p class="display-4 d-inline-block mb-0">Supplies</p>
                             </div>
                             <div class="col text-right">
-                                <button class="btn btn-sm btn-success" onclick="AddNewInventory()">Add New</button>
+                                <button class="btn btn-sm btn-success" onclick="AddNewItem()">Add New Item</button>
+                                <button class="btn btn-sm btn-success" onclick="AddNewInventory()">Add Supplies</button>
                             </div>
                         </div>
                     </div>
@@ -109,28 +162,43 @@ Inventory
                         <table class="table align-items-center table-flush">
                             <thead class="thead-light">
                                 <tr>
-                                    <th scope="col">Item</th>
-                                    <!-- <th scope="col">Date Received</th> -->
-                                    <th scope="col">Available Stocks</th>
+                                    <th scope="col">Item Code - Item Name</th>
+                                    <th scope="col">Min Qty</th>
+                                    <th scope="col">Max Qty</th>
+                                    <th scope="col">Reorder Level</th>
+                                    <th scope="col">Available Items</th>
                                     <th scope="col">Status</th>
-                                    <th scope="col" class="text-right">Action</th>
+                                    <th scope="col" class="text-left">Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for inventory in data.inventories %}
                                 <tr id='inventory-{{inventory.id}}' data-id={{inventory.id}}>
                                     <td>
-                                        {{inventory.item}}
+                                        {{inventory.item_code}} - {{inventory.item}}
                                     </td>
                                     <td>
-                                        {{ inventory.quantity }}
+                                        {{inventory.min_quantity}}
                                     </td>
                                     <td>
-                                        {{inventory.status.status}}
+                                        {{inventory.max_quantity}}
+                                    </td>
+                                    <td>
+                                        {% if inventory.is_sufficient %}
+                                            {{ inventory.reorder_level }}
+                                        {% else %}
+                                            <span class="badge badge-lg badge-pill badge-danger mb-1 d-block">You need to add new supplies!</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {{ inventory.available_items|length }} Items
+                                    </td>
+                                    <td>
+                                        <span class="badge badge-lg badge-pill badge-default mb-1 d-block">{{ inventory.used_items|length}} Total Used Items</span>
+                                        <span class="badge badge-lg badge-pill badge-default mb-1 d-block">{{ inventory.expired_items|length }} Total Expired Items</span>
                                     </td>
                                     <td class="text-right">
-                                        <button onclick="EditInventory('{{ inventory.id }}')" class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button>
-                                        <button onclick="DeleteInventory('{{ inventory.id }}')" class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
+                                        <button onclick="EditItem('{{ inventory.id }}')" class="btn btn-warning btn-sm d-block mb-1"><i class="fa fa-edit"></i></button>
                                     </td>
                                 </tr>
                                 {% endfor %}
@@ -150,20 +218,18 @@ Inventory
     setSideBar('#menu-inventory')
 
     var modal_inventory = '#modal-inventory'
+    var modal_item      = '#modal-item'
 
     var AddNewInventory = function () {
 
-        $('#id').val('-1')
-        $('#item').val('')
+        $('#inventory_id').val('')
         $('#quantity').val('')
         $('#expiry_date').val('')
-        // $('#receive_date').val("{{data.current_date.strftime('%m/%d/%Y')}}")
         $(".selectpicker").selectpicker('deselectAll');
         $(".selectpicker").selectpicker('val', 5);
 
-        $('#item_error').html('')
+        $('#inventory_id_error').html('')
         $('#expiry_date_error').html('')
-        // $('#receive_date_error').html('')
         $('#quantity_error').html('')
         $('#status_id_error').html('')
 
@@ -177,19 +243,97 @@ Inventory
 
     var SaveInventory = function () {
 
-        $('#item_error').html('')
+        $('#inventory_id_error').html('')
         $('#expiry_date_error').html('')
-        // $('#receive_date_error').html('')
         $('#quantity_error').html('')
         $('#status_id_error').html('')
 
         data = {
-            'id'            : $('#id').val(),
-            'item'          : $('#item').val(),
+            'inventory_id'  : $('#inventory_id').val(),
             'expiry_date'   : $('#expiry_date').val(),
-            'receive_date'  : null, //$('#receive_date').val(), 
             'quantity'      : $('#quantity').val(),
             'status_id'     : $('#status_id').val()
+        }
+
+        Controller.POST('/api/inventory/items/upsert', data).done(function (result) {
+            if (result.success) {
+                location.reload()
+            }
+            else {
+                if (result.errors.item) $('#inventory_id_error').html(result.errors.item)
+                if (result.errors.expiry_date) $('#expiry_date_error').html(result.errors.expiry_date)
+                if (result.errors.quantity) $('#quantity_error').html(result.errors.quantity)
+                if (result.errors.status_id) $('#status_id_error').html(result.errors.status_id)
+            }
+        })
+
+    }
+
+    // var EditInventory = function (id) {
+
+    //     $('#inventory_id_error').html('')
+    //     $('#expiry_date_error').html('')
+    //     $('#quantity_error').html('')
+    //     $('#status_id_error').html('')
+
+    //     Controller.GET('/api/inventory/get/' + id, {}).done(function (result) {
+
+    //         $('#inventory_id').val(result.id)
+    //         $('#expiry_date').val(result.expiry_date)
+    //         // $('#receive_date').val(result.receive_date)
+    //         $('#quantity').val(result.quantity)
+    //         $("#status_id").selectpicker('val', result.status_id)
+
+    //         $(modal_inventory).modal({
+    //             "backdrop": "static",
+    //             "keyboard": true,
+    //             "show": true
+    //         })
+
+    //     })
+
+    // }
+
+    // ====================================================================================
+
+    var AddNewItem = function () {
+
+        $('#item_id').val('-1')
+        $('#item_code').val('')
+        $('#item').val('')
+        $('#min_quantity').val('')
+        $('#max_quantity').val('')
+        $('#reorder_level').val('')
+
+        $('#item_code_error').html('')
+        $('#item_error').html('')
+        $('#min_quantity_error').html('')
+        $('#max_quantity_error').html('')
+        $('#reorder_level_error').html('')
+
+        $(modal_item).modal({
+            "backdrop": "static",
+            "keyboard": true,
+            "show": true
+        })
+
+    }
+
+    var SaveItem = function () {
+
+        $('#item_code_error').html('')
+        $('#item_error').html('')
+        $('#min_quantity_error').html('')
+        $('#max_quantity_error').html('')
+        $('#reorder_level_error').html('')
+
+        data = {
+            'id'            : $('#item_id').val(),
+            'item_code'     : $('#item_code').val(),
+            'item'          : $('#item').val(),
+            'min_quantity'  : $('#min_quantity').val(),
+            'max_quantity'  : $('#max_quantity').val(),
+            'reorder_level' : $('#reorder_level').val()
         }
 
         Controller.POST('/api/inventory/upsert', data).done(function (result) {
@@ -198,34 +342,34 @@ Inventory
                 location.reload()
             }
             else {
+                if (result.errors.item_code) $('#item_code_error').html(result.errors.item_code)
                 if (result.errors.item) $('#item_error').html(result.errors.item)
-                if (result.errors.expiry_date) $('#expiry_date_error').html(result.errors.expiry_date)
-                // if (result.errors.receive_date) $('#receive_date_error').html(result.errors.receive_date)
-                if (result.errors.quantity) $('#quantity_error').html(result.errors.quantity)
-                if (result.errors.status_id) $('#status_id_error').html(result.errors.status_id)
+                if (result.errors.min_quantity) $('#min_quantity_error').html(result.errors.min_quantity)
+                if (result.errors.max_quantity) $('#max_quantity_error').html(result.errors.max_quantity)
+                if (result.errors.reorder_level) $('#reorder_level_error').html(result.errors.reorder_level)
             }
         })
 
     }
 
-    var EditInventory = function (id) {
+    var EditItem = function (item_id) {
 
+        $('#item_code_error').html('')
         $('#item_error').html('')
-        $('#expiry_date_error').html('')
-        // $('#receive_date_error').html('')
-        $('#quantity_error').html('')
-        $('#status_id_error').html('')
+        $('#min_quantity_error').html('')
+        $('#max_quantity_error').html('')
+        $('#reorder_level_error').html('')
 
-        Controller.GET('/api/inventory/get/' + id, {}).done(function (result) {
+        Controller.GET('/api/inventory/get/' + item_id, {}).done(function (result) {
 
-            $('#id').val(result.id)
+            $('#item_id').val(result.id)
+            $('#item_code').val(result.item_code)
             $('#item').val(result.item)
-            $('#expiry_date').val(result.expiry_date)
-            // $('#receive_date').val(result.receive_date)
-            $('#quantity').val(result.quantity)
-            $("#status_id").selectpicker('val', result.status_id)
+            $('#min_quantity').val(result.min_quantity)
+            $('#max_quantity').val(result.max_quantity)
+            $('#reorder_level').val(result.reorder_level)
 
-            $(modal_inventory).modal({
+            $(modal_item).modal({
                 "backdrop": "static",
                 "keyboard": true,
                 "show": true
@@ -233,32 +377,6 @@ Inventory
 
         })
 
-    }
-
-    var DeleteInventory = function (id) {
-
-        bootbox.confirm({
-            message: "Delete Inventory?",
-            buttons: {
-                confirm: {
-                    label: 'Delete',
-                    className: 'btn-sm btn-danger'
-                },
-                cancel: {
-                    label: 'Cancel',
-                    className: 'btn-sm btn-info'
-                }
-            },
-            callback: function (result) {
-                if (result) {
-
-                    Controller.POST('/api/inventory/delete', { 'id': id }).done(function (result) {
-                        location.reload()
-                    })
-
-                }
-            }
-        })
     }
 
 </script>

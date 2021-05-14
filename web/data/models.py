@@ -1,8 +1,11 @@
-from data import db
-from data import login_manager
-from flask_login import UserMixin
-import re 
-from werkzeug.security import generate_password_hash, check_password_hash
+from data                   import db
+from data                   import login_manager
+from flask_login            import UserMixin
+from sqlalchemy.ext.hybrid  import hybrid_property, hybrid_method
+from sqlalchemy             import select, func
+import re, json
+from werkzeug.security      import generate_password_hash, check_password_hash
+from datetime               import datetime
 
 class Accounts(UserMixin, db.Model):
 
@@ -76,11 +79,13 @@ class Appointments(db.Model):
     details             = db.Column(db.Text)
     appointment_date    = db.Column(db.DateTime)
     assigned            = db.Column(db.JSON)
+    meds                = db.Column(db.JSON)
 
     # medical record
     record_number       = db.Column(db.String(100))
     record_details      = db.Column(db.Text)
     record_date         = db.Column(db.DateTime)
+    record_form         = db.Column(db.JSON)
     next_appointments   = db.Column(db.JSON)
 
     # timestamps
@@ -91,6 +96,10 @@ class Appointments(db.Model):
     status_id   = db.Column(db.Integer, db.ForeignKey('status.id'), nullable=True)
     service_id  = db.Column(db.Integer, db.ForeignKey('services.id'), nullable=True)
     account_id  = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
+    
+    @hybrid_property
+    def prescriptions(self):
+        return [prescription for prescription in Items.query.all() if prescription.id in [int(item_id) for item_id in json.loads(self.meds)]]
     
     def __str__(self):
         return {
@@ -110,40 +119,88 @@ class Appointments(db.Model):
             'status_id'         : self.status_id,
             'account_id'        : self.account_id,
             'service_id'        : self.service_id,
+            'meds'              : self.meds
         }
 
 class Inventory(db.Model):
 
     id              = db.Column(db.Integer, primary_key=True)
+    item_code       = db.Column(db.String(100))
     item            = db.Column(db.String(100))
-    expiry_date     = db.Column(db.DateTime)
-    receive_date    = db.Column(db.DateTime)
-    quantity        = db.Column(db.Integer)
     min_quantity    = db.Column(db.Integer)
     max_quantity    = db.Column(db.Integer)
-    reorder_level   = db.Column(db.Integer)
+    reorder_level   = db.Column(db.Integer, default=10)
     
     # timestamps
     created_at  = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at  = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
     # relationship
-    status_id   = db.Column(db.Integer, db.ForeignKey('status.id'), nullable=True)
+    items = db.relationship('Items',  backref='inventory', lazy=True)
+
+    @hybrid_property
+    def is_sufficient(self):
+        return self.reorder_level < len([data for data in self.items if data.current_status == 5])
+
+    @hybrid_property
+    def all_items(self):
+        return self.items
+    
+    @hybrid_property
+    def available_items(self):
+        return [data for data in self.items if data.current_status == 5]
+    
+    @hybrid_property
+    def used_items(self):
+        return [data for data in self.items if data.current_status == 6]
+    
+    @hybrid_property
+    def expired_items(self):
+        return [data for data in self.items if data.current_status == 7]
+
+    # @hybrid_method
+    # def get_item(self, id):
+    #     return [data for data in self.items if data.id == id][0]
+    
+    def __str__(self):
+        return {
+            'id'                : self.id,
+            'item_code'         : self.item_code,
+            'item'              : self.item,
+            'min_quantity'      : self.min_quantity,
+            'max_quantity'      : self.max_quantity,
+            'reorder_level'     : self.reorder_level
+        }
+
+class Items(db.Model):
+
+    id              = db.Column(db.Integer, primary_key=True)
+    expiry_date     = db.Column(db.DateTime)
+    receive_date    = db.Column(db.DateTime)
+    
+    # timestamps
+    created_at  = db.Column(db.DateTime, default=db.func.current_timestamp())
+    updated_at  = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    # relationship
+    status_id       = db.Column(db.Integer, db.ForeignKey('status.id'), nullable=True)
+    inventory_id    = db.Column(db.Integer, db.ForeignKey('inventory.id'), nullable=True)
+
+    @hybrid_property
+    def current_status(self):
+        if self.expiry_date <= datetime.now() and self.status_id == 5:
+            return 7
+        else:
+            return self.status_id
 
     def __str__(self):
         return {
             'id'            : self.id,
-            'item'          : self.item,
-            'quantity'      : self.quantity,
-            'min_quantity'  : self.min_quantity,
-            'max_quantity'  : self.max_quantity,
-            'reorder_level' : self.reorder_level,
+            'is_expired'    : self.expiry_date >= datetime.now(),
             'expiry_date'   : self.expiry_date.strftime('%m/%d/%Y') if self.expiry_date is not None else None,
             'receive_date'  : self.receive_date.strftime('%m/%d/%Y') if self.receive_date is not None else None,
-            'status'        : self.status.status,
             'status_id'     : self.status.id
         }
-
 
 class Roles(db.Model):
 
@@ -169,6 +226,7 @@ class Services(db.Model):
 
     id              = db.Column(db.Integer, primary_key=True)
     service         = db.Column(db.String(50))
+    form            = db.Column(db.JSON)
     availability    = db.Column(db.Integer, default=3) # 1 for AM, 2 for PM, 3 for BOTH
 
     # timestamps
@@ -182,6 +240,7 @@ class Services(db.Model):
         return {
             'id'            : self.id,
             'service'       : self.service,
+            'form'          : self.form,
             'availability'  : self.availability,
             'created_at'    : self.created_at,
             'updated_at'    : self.updated_at
@@ -198,7 +257,7 @@ class Status(db.Model):
 
     # relationship
     appointment_status  = db.relationship('Appointments',   backref='status', lazy=True)
-    supply_status       = db.relationship('Inventory',      backref='status', lazy=True)
+    item_status         = db.relationship('Items',          backref='status', lazy=True)
 
     def __str__(self):
         return {

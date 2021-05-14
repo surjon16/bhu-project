@@ -3,16 +3,28 @@ from flask_login    import login_required, login_user, logout_user, current_user
 from application    import app
 from data.repo      import Repository
 from data.schemas   import RegisterAccountSchema
-from datetime       import datetime
+from datetime       import datetime, timedelta
 from functools      import wraps
+import dateutil.parser as parser
 
 # ===============================================================
 # DECORATORS
 # ===============================================================
 
+@app.template_filter('strftime')
+def _jinja2_filter_datetime(date, fmt=None):
+    date = parser.parse(date)
+    native = date.replace(tzinfo=None)
+    format='%m/%d/%Y'
+    return native.strftime(format)
+
 @app.context_processor
 def inject_now():
-    return {'now': datetime.utcnow()}
+    return {
+        'now'   : datetime.now(),
+        'day'   : timedelta(days=1),
+        'month' : timedelta(days=30)
+    }
 
 def admin_login_required(f):
     @wraps(f)
@@ -66,10 +78,12 @@ def dashboard():
 @admin_login_required
 def records():
     response = {
-        'roles'     : Repository.readRoles(),
-        'status'    : Repository.readAllStatus(),
-        'accounts'  : Repository.readAccounts(),
-        'records'   : Repository.readRecords()
+        'roles'         : Repository.readRoles(),
+        'status'        : Repository.readAllStatus(),
+        'accounts'      : Repository.readAccounts(),
+        'records'       : Repository.readRecords(),
+        'inventories'   : Repository.readInventories(),
+        'current_date'  : datetime.now()
     }
     return render_template('admin/records.html', data=response)
 
@@ -95,7 +109,9 @@ def search_records():
             'roles'     : Repository.readRoles(),
             'status'    : Repository.readAllStatus(),
             'accounts'  : Repository.readAccounts(),
-            'records'   : Repository.searchRecords(account_id)
+            'records'   : Repository.searchRecords(account_id),
+        'inventories'   : Repository.readInventories(),
+        'current_date'  : datetime.now()
         }
         return render_template('admin/records.html', data=response)
 
@@ -110,8 +126,9 @@ def appointments():
         'accounts'      : Repository.readAccounts(),
         'residents'     : Repository.readResidentAccounts(),
         'records'       : Repository.readRecords(),
-        'appointments'  : Repository.readAppointments(),#Repository.readDailyAppointments(datetime.now().strftime('%m/%d/%Y')),
-        'current_date'  : datetime.now().strftime('%m/%d/%Y')
+        'appointments'  : Repository.readDailyAppointments(datetime.now().strftime('%m/%d/%Y')),
+        'inventories'   : Repository.readInventories(),
+        'current_date'  : datetime.now()
     }
     return render_template('admin/appointments.html', data=response)
 
@@ -138,7 +155,8 @@ def search_appointments():
             'residents'     : Repository.readResidentAccounts(),
             'records'       : Repository.readRecords(),
             'appointments'  : Repository.readDailyAppointments(date),
-            'current_date'  : date
+            'inventories'   : Repository.readInventories(),
+            'current_date'  : datetime.strptime(date, '%m/%d/%Y')
         }
         return render_template('admin/appointments.html', data=response)
 
@@ -195,11 +213,9 @@ def account(id):
 @admin_login_required
 def inventories():
     response = {
-        'status'                        : Repository.readAllStatus(),
-        'inventories'                   : Repository.readInventories(),
-        'inventories_by_item'           : Repository.readInventoriesGroupByItem(),
-        'inventories_by_item_status'    : Repository.readInventoriesGroupByItemAndStatus(),
-        'current_date'                  : datetime.now()
+        'status'        : Repository.readAllStatus(),
+        'inventories'   : Repository.readInventories(),
+        'current_date'  : datetime.now()
     }
     return render_template('admin/inventories.html', data=response)
 
@@ -338,7 +354,8 @@ def patient_record_details(id):
 def patient_appointment_request():
     response = {
         'status'        : Repository.readAllStatus(),
-        'services'      : Repository.readServices()
+        'services'      : Repository.readServices(),
+        'current_date'  : datetime.now()
     }
     return render_template('patient/appointment_request.html', data=response)
 

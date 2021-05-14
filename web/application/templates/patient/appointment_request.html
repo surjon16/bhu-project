@@ -3,7 +3,14 @@
 Request Appointment
 {% endblock %}
 
-{% block css %}{% endblock %}
+{% block css %}
+<style>
+    .available-date {
+        background-color: blue !important;
+        color: blue !important;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <div class="main-content" id="panel">
@@ -49,7 +56,7 @@ Request Appointment
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label for="appointment_date" class="form-control-label">Appointment <span id="appointment_date_error" class="h5 text-danger"></span></label>
-                                    <input class="form-control " type="datetime-local" id="appointment_date">
+                                    <input class="form-control" type="datetime-local" id="appointment_date" value="{{ now.strftime('%Y-%m-%dT%H:%M') }}">
                                 </div>
                             </div>
                         </div>
@@ -79,11 +86,46 @@ Request Appointment
 {% block scripts %}
 <script>
 
+    // $(document).ready(function () {
+    //     initComponents()
+    // })
+
+    // function initComponents() {
+        
+    //     availableDates = ['05/25/2021', '05/27/2021', '05/22/2021']
+
+    //     console.log('{{ (now + day) }}')
+
+    //     $('#appointment_date').datepicker({
+    //         dateFormat: 'mm/dd/yy',
+    //         startDate: '{{ now.strftime("%m/%d/%Y") }}',
+    //         endDate: '{{ (now + month).strftime("%m/%d/%Y") }}',
+    //         beforeShowDay: function (in_date) {
+    //             var dmy = (in_date.getMonth() + 1)
+    //             if (in_date.getMonth() < 9) dmy = "0" + dmy
+    //             dmy += "/"
+
+    //             if (in_date.getDate() < 10) dmy += "0"
+    //             dmy += in_date.getDate() + "/" + in_date.getFullYear()
+
+    //             console.log(dmy + ' : ' + ($.inArray(dmy, availableDates)))
+
+    //             if ($.inArray(dmy, availableDates) > -1) {
+    //                 return [true, "available-date", "Available"]
+    //             } else {
+    //                 return [false, "available-date", "unAvailable"]
+    //             }
+    //         },
+    //         autoclose: true
+    //     })
+
+    // }
+    
+
     function Refresh() {
         window.location.href = '/patient/appointment/request'
     }
 
-    
     var SaveAppointment = function () {
 
         data = {

@@ -1,7 +1,7 @@
 from flask          import jsonify, render_template, request, redirect, url_for, make_response
 from application    import app
 from data.repo      import Repository
-from data.schemas   import CreateAccountSchema, UpdateAccountSchema, CreateRecordSchema, CreateAppointmentSchema, CreateServiceSchema, CreateInventorySchema
+from data.schemas   import CreateAccountSchema, UpdateAccountSchema, CreateRecordSchema, CreateAppointmentSchema, CreateServiceSchema, CreateInventorySchema, AddItemsSchema
 
 # API RESOURCE PATTERN
 
@@ -136,6 +136,19 @@ def upsert_inventory():
         return {'success':True}
     return {'success':False}
 
+@app.route('/api/inventory/items/upsert', methods=['POST'])
+def upsert_inventory_items():
+    
+    validator = AddItemsSchema(unknown='EXCLUDE')
+    errors = validator.validate(request.form)
+
+    if errors:
+        return jsonify({'success':False, 'errors':errors})
+
+    if Repository.upsertItems(request.form):
+        return {'success':True}
+    return {'success':False}
+
 @app.route('/api/inventory/delete', methods=['POST'])
 def delete_inventory():
     if Repository.deleteInventory(request.form):
@@ -251,3 +264,7 @@ def update_notification(id):
 def populate():
     Repository.populate()
     return {'success':True}
+
+@app.route('/api/tester', methods=['GET'])
+def tester():
+    return jsonify([data.__str__() for data in Repository.tester()])    

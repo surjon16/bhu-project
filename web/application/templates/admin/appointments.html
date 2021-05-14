@@ -79,7 +79,7 @@ Appointments
     </div>
 </div>
 <div class="modal fade" id="modal-record">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content card bg-secondary shadow">
             <div class="modal-header card-header bg-white border-0">
                 <h4 class="card-title">Medical Record</h4>
@@ -92,15 +92,13 @@ Appointments
                 <div class="row">
                     <div class="col-md-5">
                         <div class="form-group">
-                            <label class="form-control-label">Record Number <span id="record_number_error"
-                                    class="h5 text-danger"></span></label>
+                            <label class="form-control-label">Record Number <span id="record_number_error" class="h5 text-danger"></span></label>
                             <input id="record_number" name="record_number" type="text" class="form-control " disabled>
                         </div>
                     </div>
                     <div class="col-md-7">
                         <div class="form-group">
-                            <label for="record_date" class="form-control-label">Date Recorded <span
-                                    id="record_date_error" class="h5 text-danger"></span></label>
+                            <label for="record_date" class="form-control-label">Date Recorded <span id="record_date_error" class="h5 text-danger"></span></label>
                             <input class="form-control " type="datetime-local" id="record_date">
                         </div>
                     </div>
@@ -109,7 +107,44 @@ Appointments
                     <div class="col-md-12">
                         <div class="form-group">
                             <label class="form-control-label">Details<span id="record_details_error" class="h5 text-danger"></span></label>
-                            <textarea id="record_details" name="record_details" type="text" class="form-control " rows="20"></textarea>
+                            <textarea id="record_details" name="record_details" type="text" class="form-control " rows="5"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="card">
+                            <div class="card-header">
+                                <label class="form-control-label">Prescriptions<span id="prescriptions_error" class="h5 text-danger"></span></label>
+                            </div>
+                            <div class="card-body p-0">
+                                <table class="table align-items-center table-flush">
+                                    <thead class="thead-light">
+                                        <tr>
+                                            <th scope="col">Item</th>
+                                            <th scope="col">Quantity</th>
+                                            <th scope="col" class="text-right">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="prescriptions_list">
+                                        <tr>
+                                            <td>
+                                                <select id="prescription_name" name="prescription_name" data-style="bg-white shadow-sm" class="form-control selectpicker show-tick" data-live-search="true" onchange="$('#prescription_quantity').attr('data-item', this.value)">
+                                                    {% for item in data.inventories if item.available_items|length > 0 %}
+                                                        <option data-subtext="{{ item.available_items|length }} items available" value="{{item.id}}">({{item.item_code}}) {{item.item}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </td>
+                                            <td>
+                                                <input id="prescription_quantity" name="prescription_quantity" class="form-control" type="number">
+                                            </td>
+                                            <td class="text-right">
+                                                <button onclick='' class="btn btn-success btn-sm"><i class="fa fa-plus"></i></button>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -150,7 +185,7 @@ Appointments
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
                                     <input id="date" name="date" type="text"
                                         class="datepicker form-control form-control-sm  w-25 d-inline-block"
-                                        value="{{data.current_date}}">
+                                        value="{{data.current_date.strftime('%m/%d/%Y')}}">
                                     <button class="btn btn-sm btn-success" type="submit">Search</button>
                                 </form>
                             </div>
@@ -383,8 +418,8 @@ Appointments
         $('#id').val('-1')        
         $(".selectpicker").selectpicker('deselectAll')
         $(".selectpicker").selectpicker('val', [])
-        $('#details').html('')
-        $('#appointment_date').val('')
+        $('#details').val('')
+        $('#appointment_date').val("{{ data.current_date.strftime('%Y-%m-%dT%H:%M') }}")
 
         $(modal).modal({
             "backdrop": "static",
@@ -492,6 +527,10 @@ Appointments
 
     var UpsertRecord = function(appointment_id) {
 
+        $('#prescription_quantity').val('')
+        $(".selectpicker").selectpicker('deselectAll')
+        $(".selectpicker").selectpicker('val', [])
+
         $('#record_number_error').html('')
         $('#record_date_error').html('')
         $('#record_details_error').html('')
@@ -502,7 +541,7 @@ Appointments
 
             $('#appointment_id').val(appointment_id)
             $('#record_number').val(result.record_number==null ? appointment_id + "-{{now.month}}{{now.year}}" : result.record_number)
-            $('#record_date').val(result.record_date)
+            $('#record_date').val(result.record_date==null ? "{{ data.current_date.strftime('%Y-%m-%dT%H:%M') }}" : result.record_date)
             $('#record_details').html(result.record_details)
 
             $(modal_record).modal({
