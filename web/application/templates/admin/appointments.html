@@ -111,6 +111,10 @@ Appointments
                         </div>
                     </div>
                 </div>
+                <div class="row card">
+                    <div class="card-header"><label class="form-control-label">Medical Form</label></div>
+                    <div id="form_viewer" class="card-body container"></div>
+                </div>
                 <div class="row">
                     <div class="col-md-12">
                         <div class="card">
@@ -455,6 +459,91 @@ Appointments
 {% endblock %}
 
 {% block scripts %}
+<script>
+
+    var EditForm = function (forms) {
+
+        if (forms == null) return null;
+
+        viewer = document.getElementById('form_viewer')
+        viewer.innerHTML = ''
+
+        JSON.parse(forms).forEach(form => {
+
+            field_name = form[0]
+            field_type = form[1]
+            field_cols = form[2]
+
+            switch (field_type) {
+
+                case 'Text Field':
+
+                    col_node = document.createElement('div')
+                    col_node.setAttribute('class', 'col-md-' + field_cols)
+
+                    group_node = document.createElement('div')
+                    group_node.setAttribute('class', 'form-group')
+
+                    label_node = document.createElement('label')
+                    label_node.setAttribute('class', 'form-control-label')
+                    label_node.innerHTML = field_name
+
+                    input_node = document.createElement('input')
+                    input_node.setAttribute('placeholder', field_name)
+                    input_node.setAttribute('class', 'form-control')
+                    input_node.setAttribute('type', 'text')
+
+                    group_node.appendChild(label_node)
+                    group_node.appendChild(input_node)
+                    col_node.appendChild(group_node)
+                    viewer.lastChild.appendChild(col_node)
+
+                    break;
+
+                case 'Large Text Field':
+
+                    col_node = document.createElement('div')
+                    col_node.setAttribute('class', 'col-md-' + field_cols)
+
+                    group_node = document.createElement('div')
+                    group_node.setAttribute('class', 'form-group')
+
+                    label_node = document.createElement('label')
+                    label_node.setAttribute('class', 'form-control-label')
+                    label_node.innerHTML = field_name
+
+                    input_node = document.createElement('textarea')
+                    input_node.setAttribute('placeholder', field_name)
+                    input_node.setAttribute('class', 'form-control')
+                    input_node.setAttribute('type', 'text')
+                    input_node.setAttribute('rows', '10')
+
+                    group_node.appendChild(label_node)
+                    group_node.appendChild(input_node)
+                    col_node.appendChild(group_node)
+                    viewer.lastChild.appendChild(col_node)
+
+                    break;
+
+                case 'New Row':
+
+                    node = document.createElement('div')
+                    node.setAttribute('class', 'row')
+
+                    viewer.appendChild(node)
+
+                    break;
+
+                default:
+                    break;
+
+            }
+
+        })
+
+    }
+
+</script>
 
 <script>
 
@@ -659,7 +748,7 @@ Appointments
     var UpsertRecord = function(appointment_id) {
         
         document.querySelectorAll('[class=prescription_item]').forEach(e => e.parentNode.removeChild(e))
-
+        
         $('#prescription_quantity').val('')
         $(".selectpicker").selectpicker('deselectAll')
         $(".selectpicker").selectpicker('val', [])
@@ -677,6 +766,8 @@ Appointments
             $('#record_details').html(result.record_details)
 
             ViewPrescription(result.meds)
+            if(result.record_form == null) EditForm(result.service_form)
+            else $('#form_viewer').html(result.record_form)
 
             $(modal_record).modal({
                 "backdrop": "static",
@@ -701,12 +792,17 @@ Appointments
         $('#record_number_error').html('')
         $('#record_date_error').html('')
         $('#record_details_error').html('')
+        
+        document.querySelectorAll('#form_viewer input').forEach(e => {
+            e.setAttribute('value', e.value)
+        })
 
         data = {
             'id'                : $('#appointment_id').val(),
             'record_number'     : $('#record_number').val(),
             'record_date'       : $('#record_date').val(),
             'record_details'    : $('#record_details').val(),
+            'record_form'       : $('#form_viewer').html(),
             'meds'              : JSON.stringify(meds),
             'next_appointments' : null
         }

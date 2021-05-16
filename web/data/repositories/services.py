@@ -32,12 +32,14 @@ class ServicesRepo:
         if data == None:
             data = Services(
                 service         = request['service'],
-                availability    = request['availability']
+                availability    = request['availability'],
+                form            = request['form']
             )
             db.session.add(data)
         else:
             data.service        = request['service']
             data.availability   = request['availability']
+            data.form           = request['form']
 
         db.session.commit()
 

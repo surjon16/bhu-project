@@ -179,6 +179,24 @@ Medical Record
                 </div>
             </div>
         </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="form-group">
+                            <label class="form-control-label">Medical Form</label>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        {% if data.record.record_form is none %}
+                            {{ data.record.status.form|safe }}
+                        {% else %}
+                            {{ data.record.record_form|safe }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
 {% endblock %}

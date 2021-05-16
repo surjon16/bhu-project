@@ -127,7 +127,7 @@ Inventory
 
 {% block content %}
 <div class="main-content" id="panel">
-    <!-- Header -->
+
     <div class="header pb-6">
         <div class="container-fluid">
             <div class="header-body">
@@ -140,12 +140,14 @@ Inventory
         </div>
     </div>
 
-    <!-- Page content -->
     <div class="container-fluid mt--6">
-        
+
         <div class="row">
+
             <div class="col-md-12">
+
                 <div class="card">
+                    
                     <div class="card-header border-0">
                         <div class="row align-items-center">
                             <div class="col">
@@ -157,9 +159,11 @@ Inventory
                             </div>
                         </div>
                     </div>
+
                     <div class="table-responsive">
-                        <!-- Projects table -->
+
                         <table class="table align-items-center table-flush">
+
                             <thead class="thead-light">
                                 <tr>
                                     <th scope="col">Item Code - Item Name</th>
@@ -171,43 +175,52 @@ Inventory
                                     <th scope="col" class="text-left">Action</th>
                                 </tr>
                             </thead>
+
                             <tbody>
+
                                 {% for inventory in data.inventories %}
-                                <tr id='inventory-{{inventory.id}}' data-id={{inventory.id}}>
-                                    <td>
-                                        {{inventory.item_code}} - {{inventory.item}}
-                                    </td>
-                                    <td>
-                                        {{inventory.min_quantity}}
-                                    </td>
-                                    <td>
-                                        {{inventory.max_quantity}}
-                                    </td>
-                                    <td>
-                                        {% if inventory.is_sufficient %}
-                                            {{ inventory.reorder_level }}
-                                        {% else %}
-                                            <span class="badge badge-lg badge-pill badge-danger mb-1 d-block">You need to add new supplies!</span>
-                                        {% endif %}
-                                    </td>
-                                    <td>
-                                        {{ inventory.available_items|length }} Items
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-lg badge-pill badge-default mb-1 d-block">{{ inventory.used_items|length}} Total Used Items</span>
-                                        <span class="badge badge-lg badge-pill badge-default mb-1 d-block">{{ inventory.expired_items|length }} Total Expired Items</span>
-                                    </td>
-                                    <td class="text-right">
-                                        <button onclick="EditItem('{{ inventory.id }}')" class="btn btn-warning btn-sm d-block mb-1"><i class="fa fa-edit"></i></button>
-                                    </td>
-                                </tr>
+
+                                    <tr id='inventory-{{inventory.id}}' data-id={{inventory.id}}>
+                                        <td>
+                                            {{inventory.item_code}} - {{inventory.item}}
+                                        </td>
+                                        <td>
+                                            {{inventory.min_quantity}}
+                                        </td>
+                                        <td>
+                                            {{inventory.max_quantity}}
+                                        </td>
+                                        <td>
+                                            {% if inventory.is_sufficient %}
+                                                {{ inventory.reorder_level }}
+                                            {% else %}
+                                                <span class="badge badge-lg badge-pill badge-danger mb-1 d-block">You need to add new supplies!</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {{ inventory.available_items|length }} Items
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-lg badge-pill badge-default mb-1 d-block">{{ inventory.used_items|length}} Total Used Items</span>
+                                            <span class="badge badge-lg badge-pill badge-default mb-1 d-block">{{ inventory.expired_items|length }} Total Expired Items</span>
+                                        </td>
+                                        <td class="text-right">
+                                            <button onclick="EditItem('{{ inventory.id }}')" class="btn btn-warning btn-sm d-block mb-1"><i class="fa fa-edit"></i></button>
+                                        </td>
+                                    </tr>
+
                                 {% endfor %}
+
                             </tbody>
                         </table>
                     </div>
+
                 </div>
+
             </div>
+
         </div>
+
     </div>
 </div>
 {% endblock %}
@@ -225,8 +238,8 @@ Inventory
         $('#inventory_id').val('')
         $('#quantity').val('')
         $('#expiry_date').val('')
-        $(".selectpicker").selectpicker('deselectAll');
-        $(".selectpicker").selectpicker('val', 5);
+        $(".selectpicker").selectpicker('deselectAll')
+        $(".selectpicker").selectpicker('val', 5)
 
         $('#inventory_id_error').html('')
         $('#expiry_date_error').html('')
@@ -268,31 +281,6 @@ Inventory
         })
 
     }
-
-    // var EditInventory = function (id) {
-
-    //     $('#inventory_id_error').html('')
-    //     $('#expiry_date_error').html('')
-    //     $('#quantity_error').html('')
-    //     $('#status_id_error').html('')
-
-    //     Controller.GET('/api/inventory/get/' + id, {}).done(function (result) {
-
-    //         $('#inventory_id').val(result.id)
-    //         $('#expiry_date').val(result.expiry_date)
-    //         // $('#receive_date').val(result.receive_date)
-    //         $('#quantity').val(result.quantity)
-    //         $("#status_id").selectpicker('val', result.status_id)
-
-    //         $(modal_inventory).modal({
-    //             "backdrop": "static",
-    //             "keyboard": true,
-    //             "show": true
-    //         })
-
-    //     })
-
-    // }
 
     // ====================================================================================
 

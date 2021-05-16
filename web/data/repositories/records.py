@@ -18,7 +18,7 @@ class RecordsRepo:
 
     # ==================================================================================
     # RECORDS
-    
+
     def readRecords():
         return Appointments.query.filter(Appointments.record_details.isnot(None)).order_by(Appointments.record_date.asc()).all()
 
@@ -28,17 +28,17 @@ class RecordsRepo:
 
     def readRecord(id):
         return Appointments.query.filter_by(id=id).first()
-    
+
     def searchRecords(id):
         return Appointments.query.filter(Appointments.record_details.isnot(None)).filter_by(account_id=id).order_by(Appointments.record_date.asc()).all()
-    
+
     def upsertRecord(request):
 
         items = Items.query.all()
         for i in items:
             if i.current_status == 7:
                 i.status_id = 7
-        
+
         db.session.commit()
 
         # ==
@@ -48,6 +48,7 @@ class RecordsRepo:
         data.record_number      = request['record_number']    
         data.record_details     = request['record_details']    
         data.record_date        = request['record_date']    
+        data.record_form        = request['record_form']    
         data.next_appointments  = request['next_appointments']
 
         meds = json.loads(request['meds'])
@@ -78,6 +79,7 @@ class RecordsRepo:
         data.record_number      = None
         data.record_details     = None
         data.record_date        = None
+        data.record_form        = None
         data.next_appointments  = None
         data.meds               = None
 

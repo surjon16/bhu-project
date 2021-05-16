@@ -108,6 +108,10 @@ class Appointments(db.Model):
     def prescriptions(self):
         return json.loads(self.meds)
     
+    @hybrid_property
+    def form_data(self):
+        return json.loads(self.service.form) if self.record_form is None else json.loads(self.record_form)
+    
     def serialize(self):
         return {
             'id'                : self.id,
@@ -117,6 +121,7 @@ class Appointments(db.Model):
             'account'           : self.account.first_name + ' ' + self.account.last_name,
             'record_number'     : self.record_number,
             'record_details'    : self.record_details,
+            'record_form'       : self.record_form,
             'record_date'       : self.record_date.strftime('%Y-%m-%dT%H:%M') if self.record_date is not None else None,
             'next_appointments' : self.next_appointments,
             'created_at'        : self.created_at,
@@ -126,7 +131,8 @@ class Appointments(db.Model):
             'status_id'         : self.status_id,
             'account_id'        : self.account_id,
             'service_id'        : self.service_id,
-            'meds'              : self.meds
+            'meds'              : self.meds,
+            'service_form'      : self.service.form
         }
 
 class Inventory(db.Model):
@@ -243,6 +249,10 @@ class Services(db.Model):
     # relationship
     appointment_service = db.relationship('Appointments',   backref='service', lazy=True)
 
+    @hybrid_property
+    def form_date(self):
+        return json.loads(self.form)
+    
     def serialize(self):
         return {
             'id'            : self.id,

@@ -1,3 +1,6 @@
+
+
+
 {% extends 'shared/layout.html' %}
 {% block title %}
 Services
@@ -7,16 +10,22 @@ Services
 
 {% block modal %}
 <div class="modal fade" id="modal-service">
-    <div class="modal-dialog">
+
+    <div class="modal-dialog modal-lg">
+
         <div class="modal-content card bg-secondary shadow">
+
             <div class="modal-header card-header bg-white border-0">
                 <h4 class="card-title">Service Info</h4>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
+
             <div class="modal-body card-body">
+
                 <div class="row">
                     <input id="id" name="id" type="text" class="form-control " hidden value="-1">
                 </div>
+
                 <div class="row">
                     <div class="col-md-12">
                         <div class="form-group">
@@ -25,31 +34,64 @@ Services
                         </div>
                     </div>
                 </div>
-                <!-- <div class="row">
-                    <div class="col-md-12">
-                        <div class="form-group">
-                            <label class="form-control-label">Availability <span id="availability_error" class="h5 text-danger"></span></label>
-                            <select id="availability" name="availability" data-style="bg-white px-4 py-3 shadow-sm" class="form-control selectpicker" data-live-search="true">
-                                <option value="1" selected>Morning Only</option>
-                                <option value="2" selected>Afternoon Only</option>
-                                <option value="3" selected>Both</option>
-                            </select>
-                        </div>
+
+                <div class="row card">
+                    <div class="card-header">
+                        <label class="form-control-label">Medical Form <span id="form_error" class="h5"> (Create a custom form for this particular service.)</span></label>
                     </div>
-                </div> -->
+                    <table class="table align-items-center table-flush">
+                        <thead class="thead-light">
+                            <tr>
+                                <th scope="col">Field Name</th>
+                                <th scope="col">Element</th>
+                                <th scope="col">Column No.</th>
+                                <th scope="col" class="text-right">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="fields_list">
+                            <tr>
+                                <td>
+                                    <input class="form-control" type="text">
+                                </td>
+                                <td>
+                                    <select data-style="bg-white shadow-sm" data-title="Please select an item" class="form-control border border-1 selectpicker show-tick" data-live-search="true">
+                                        <option value="">Text Field</option>
+                                        <option value="">Large Text Field</option>
+                                        <option value="">New Row</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <input class="form-control" type="number">
+                                </td>
+                                <td class="text-right">
+                                    <button onclick='AddToForm(this.parentNode.parentNode.parentNode)' class="btn btn-success btn-sm"><i class="fa fa-plus"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <div class="row card">
+                    <div class="card-header"><label class="form-control-label">Form Preview</label></div>
+                    <div id="form_viewer" class="card-body container"></div>
+                </div>
+                
             </div>
-            <div class="modal-footer">
+
+            <div class="modal-footer border border-1">
                 <button class="btn btn-sm btn-danger" data-dismiss="modal">Cancel</button>
                 <button class="btn btn-sm btn-success" onclick="SaveService()">Save</button>
             </div>
+
         </div>
+
     </div>
+
 </div>
 {% endblock %}
 
 {% block content %}
 <div class="main-content" id="panel">
-    <!-- Header -->
+
     <div class="header pb-6">
         <div class="container-fluid">
             <div class="header-body">
@@ -62,7 +104,6 @@ Services
         </div>
     </div>
 
-    <!-- Page content -->
     <div class="container-fluid mt--6">
         <div class="row">
             <div class="col">
@@ -73,13 +114,12 @@ Services
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <!-- Projects table -->
+
                         <table class="table align-items-center table-flush">
                             <thead class="thead-light">
                                 <tr>
                                     <th scope="col">ID</th>
                                     <th scope="col">Service</th>
-                                    <!-- <th scope="col">Availability</th> -->
                                     <th scope="col" class="text-right">Action</th>
                                 </tr>
                             </thead>
@@ -92,15 +132,6 @@ Services
                                     <td>
                                         {{service.service}}
                                     </td>
-                                    <!-- <td>
-                                        {% if service.availability == 1 %}
-                                            Morning Only
-                                        {% elif service.availability == 2 %}
-                                            Afternoon Only
-                                        {% else %}
-                                            Whole Day
-                                        {% endif %}
-                                    </td> -->
                                     <td class="text-right">
                                         <button onclick='EditService(this)' class="btn btn-warning btn-sm"><i class="fa fa-edit"></i></button>
                                         <button onclick='DeleteService(this)' class="btn btn-danger btn-sm"><i class="fa fa-trash"></i></button>
@@ -120,11 +151,156 @@ Services
 {% block scripts %}
 <script>
 
+    var AddToForm = function(body) {
+        
+        row         = body.children[0]
+
+        field_name  = row.children[0].children[0].value
+        field_type  = row.children[1].children[0].children[1].title
+        field_cols  = row.children[2].children[0].value
+
+        $('#form_error').html('')
+
+        if (field_type == null) {
+            $('#form_error').html(' Please select a field type.')
+            return null
+        }
+
+        new_row = row.cloneNode(true)
+        new_row.setAttribute('class', 'field_item')
+        new_row.children[0].innerHTML = '<input class="form-control" type="text" value="' + field_name + '" disabled>' //field_name
+        new_row.children[1].innerHTML = '<input class="form-control" type="text" value="' + field_type + '" disabled>' //field_type
+        new_row.children[2].innerHTML = '<input class="form-control" type="text" value="' + field_cols + '" disabled>' //field_cols
+        new_row.children[3].innerHTML = '<button onclick="this.parentNode.parentNode.remove()" class="btn btn-danger btn-sm"><i class="fa fa-minus"></i></button>'
+
+        body.appendChild(new_row)
+        AddToViewer()
+        
+        $(".selectpicker").selectpicker('deselectAll')
+        $(".selectpicker").selectpicker('val', [])
+        row.children[0].children[0].value = ''
+        row.children[2].children[0].value = ''
+
+    }
+
+    var EditForm = function(forms) {
+        
+        if (forms == null) return null;
+
+        JSON.parse(forms).forEach(form => {
+
+            body = document.getElementById('fields_list')
+            row = body.children[0]
+
+            field_name = form[0]
+            field_type = form[1]
+            field_cols = form[2]
+
+            new_row = row.cloneNode(true)
+            new_row.setAttribute('class', 'field_item')
+            new_row.children[0].innerHTML = '<input class="form-control" type="text" value="' + field_name + '" disabled>' //field_name
+            new_row.children[1].innerHTML = '<input class="form-control" type="text" value="' + field_type + '" disabled>' //field_type
+            new_row.children[2].innerHTML = '<input class="form-control" type="text" value="' + field_cols + '" disabled>' //field_cols
+            new_row.children[3].innerHTML = '<button onclick="this.parentNode.parentNode.remove()" class="btn btn-danger btn-sm"><i class="fa fa-minus"></i></button>'
+
+            body.appendChild(new_row)
+            AddToViewer()
+
+        })
+
+    }
+
+    var AddToViewer = function() {
+        
+        viewer = document.getElementById('form_viewer')
+        viewer.innerHTML = ''
+
+        elements = []
+        document.querySelectorAll('[class=field_item]').forEach(e => {
+
+            field_name  = e.children[0].children[0].value
+            field_type  = e.children[1].children[0].value
+            field_cols  = e.children[2].children[0].value
+
+            switch (field_type) {
+
+                case 'Text Field':
+
+                    col_node = document.createElement('div')
+                    col_node.setAttribute('class', 'col-md-'+field_cols)
+
+                    group_node = document.createElement('div')
+                    group_node.setAttribute('class', 'form-group')
+
+                    label_node = document.createElement('label')
+                    label_node.setAttribute('class', 'form-control-label')
+                    label_node.innerHTML = field_name
+
+                    input_node = document.createElement('input')
+                    input_node.setAttribute('placeholder', field_name)
+                    input_node.setAttribute('class', 'form-control')
+                    input_node.setAttribute('type', 'text')
+
+                    group_node.appendChild(label_node)
+                    group_node.appendChild(input_node)
+                    col_node.appendChild(group_node)
+                    viewer.lastChild.appendChild(col_node)
+
+                    break;
+
+                case 'Large Text Field':
+
+                    col_node = document.createElement('div')
+                    col_node.setAttribute('class', 'col-md-'+field_cols)
+
+                    group_node = document.createElement('div')
+                    group_node.setAttribute('class', 'form-group')
+
+                    label_node = document.createElement('label')
+                    label_node.setAttribute('class', 'form-control-label')
+                    label_node.innerHTML = field_name
+
+                    input_node = document.createElement('textarea')
+                    input_node.setAttribute('placeholder', field_name)
+                    input_node.setAttribute('class', 'form-control')
+                    input_node.setAttribute('type', 'text')
+                    input_node.setAttribute('rows', '10')
+
+                    group_node.appendChild(label_node)
+                    group_node.appendChild(input_node)
+                    col_node.appendChild(group_node)
+                    viewer.lastChild.appendChild(col_node)
+
+                    break;
+
+                case 'New Row':
+
+                    node = document.createElement('div')
+                    node.setAttribute('class', 'row')
+
+                    viewer.appendChild(node)
+
+                    break;
+
+                default:
+                    break;
+
+            }
+        })
+
+    }
+
+</script>
+<script>
+
     setSideBar('#menu-services')
 
     var modal_service = '#modal-service'
 
     var AddNewService = function () {
+
+        document.querySelectorAll('[class=field_item]').forEach(e => e.parentNode.removeChild(e))
+        document.getElementById('form_viewer').innerHTML = ''
 
         $('#service_error').html('')
         $('#availability_error').html('')
@@ -133,7 +309,6 @@ Services
         $('#service').val('')
         $(".selectpicker").selectpicker('deselectAll');
         $(".selectpicker").selectpicker('val', []);
-
         
         $(modal_service).modal({
             "backdrop": "static",
@@ -148,10 +323,19 @@ Services
         $('#service_error').html('')
         $('#availability_error').html('')
 
+        elements = []
+        document.querySelectorAll('[class=field_item]').forEach(e => {
+            field_name = e.children[0].children[0].value
+            field_type = e.children[1].children[0].value
+            field_cols = e.children[2].children[0].value
+            elements.push([field_name, field_type, field_cols])
+        })
+
         data = {
             'id'            : $('#id').val(),
             'service'       : $('#service').val(),
-            'availability'  : null //$('#availability').val()
+            'form'          : JSON.stringify(elements),
+            'availability'  : null
         }
 
         Controller.POST('/api/service/upsert', data).done(function (result) {
@@ -169,6 +353,9 @@ Services
 
     var EditService = function (e) {
 
+        document.querySelectorAll('[class=field_item]').forEach(e => e.parentNode.removeChild(e))
+        document.getElementById('form_viewer').innerHTML = ''
+
         $('#service_error').html('')
         $('#availability_error').html('')
 
@@ -181,6 +368,7 @@ Services
             $('#id').val(result.id)
             $('#service').val(result.service)
             $('#availability').selectpicker('val', result.availability)
+            EditForm(result.form)
 
             $(modal_service).modal({
                 "backdrop": "static",
