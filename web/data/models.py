@@ -106,7 +106,7 @@ class Appointments(db.Model):
 
     @hybrid_property
     def prescriptions(self):
-        return json.loads(self.meds) if self.meds is None else json_loads(self.meds)
+        return json.loads(self.meds) if self.meds is None else json.loads(self.meds)
     
     @hybrid_property
     def form_data(self):
