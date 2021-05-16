@@ -2,14 +2,40 @@
 {% block title %}
 Request Appointment
 {% endblock %}
-
 {% block css %}
+<link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
 <style>
-    .available-date {
-        background-color: blue !important;
-        color: blue !important;
+    
+    .ui-datepicker {
+        width: 100% !important;
     }
+
+    .ui-datepicker th {
+        color: #525f7f !important;
+    }
+
+    .ui-datepicker td {
+        padding: 0 !important;
+    }
+
+    .ui-widget-header, .ui-state-hover {
+        background: transparent !important;
+        color: #525f7f !important;
+    }
+
+    .ui-state-default {
+        background: transparent !important;
+        color: #525f7f !important;
+        text-align: center !important;
+    }
+
+    .ui-state-active {
+        background: white !important;
+        color: #525f7f !important;
+    }
+    
 </style>
+
 {% endblock %}
 
 {% block content %}
@@ -52,11 +78,45 @@ Request Appointment
                                 </div>
                             </div>
                         </div>
+                        <div class="row">   
+                            <div class="col-md-12">
+                                <div class="card">
+                                    <div id="appointment_date" type="date"></div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label for="appointment_date" class="form-control-label">Appointment <span id="appointment_date_error" class="h5 text-danger"></span></label>
-                                    <input class="form-control" type="datetime-local" id="appointment_date" value="{{ now.strftime('%Y-%m-%dT%H:%M') }}">
+                                    <label class="form-control-label">Schedule <span id="appointment_date_error" class="h5 text-danger"></span></label>
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" id="{{ time_schedules[0].t }}" name="customRadio" class="custom-control-input">
+                                        <label class="custom-control-label" for="{{ time_schedules[0].t }}">{{ time_schedules[0].t }}</label>
+                                    </div>
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" id="{{ time_schedules[1].t }}" name="customRadio" class="custom-control-input">
+                                        <label class="custom-control-label" for="{{ time_schedules[1].t }}">{{ time_schedules[1].t }}</label>
+                                    </div>
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" id="{{ time_schedules[2].t }}" name="customRadio" class="custom-control-input">
+                                        <label class="custom-control-label" for="{{ time_schedules[2].t }}">{{ time_schedules[2].t }}</label>
+                                    </div>
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" id="{{ time_schedules[3].t }}" name="customRadio" class="custom-control-input">
+                                        <label class="custom-control-label" for="{{ time_schedules[3].t }}">{{ time_schedules[3].t }}</label>
+                                    </div>
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" id="{{ time_schedules[4].t }}" name="customRadio" class="custom-control-input">
+                                        <label class="custom-control-label" for="{{ time_schedules[4].t }}">{{ time_schedules[4].t }}</label>
+                                    </div>
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" id="{{ time_schedules[5].t }}" name="customRadio" class="custom-control-input">
+                                        <label class="custom-control-label" for="{{ time_schedules[5].t }}">{{ time_schedules[5].t }}</label>
+                                    </div>
+                                    <div class="custom-control custom-radio mb-3">
+                                        <input type="radio" id="{{ time_schedules[6].t }}" name="customRadio" class="custom-control-input">
+                                        <label class="custom-control-label" for="{{ time_schedules[6].t }}">{{ time_schedules[6].t }}</label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -84,42 +144,66 @@ Request Appointment
 {% endblock %}
 
 {% block scripts %}
+<script src='/static/js/jquery-ui.min.js'></script>
+
 <script>
 
-    // $(document).ready(function () {
-    //     initComponents()
-    // })
+    $(document).ready(function () {
+        Controller.GET('/api/appointment/get/slots').done(function(result) {
+            populateCalendar(result)
+        })
+    })
 
-    // function initComponents() {
+    function populateCalendar(schedules) {
+
+        state = {
+            available       : [true, "bg-success", "Available"],
+            not_available   : [false, "bg-danger", "Not Available"]
+        }
         
-    //     availableDates = ['05/25/2021', '05/27/2021', '05/22/2021']
+        $('#appointment_date').datepicker({
+            dateFormat: 'mm/dd/yy',
+            onSelect: function(date, el) {
+                radios = document.querySelectorAll('[type=radio]')
+                radios.forEach(radio => {
+                    radio.disabled = false
+                    radio.checked = false
+                })
+                for (let i = 0; i < schedules.length; i++) { 
+                    const schedule = schedules[i];
+                    if(schedule.date == date) {
+                        for (let i = 0; i < schedule.time.length; i++) {
+                            const time = schedule.time[i];
+                            if(time.slots == 0) {
+                                document.getElementById(time.t).disabled = true
+                            }
+                        }
+                    }
+                }
+            },
+            beforeShowDay: function (in_date) {
+                
+                if (in_date.getDay() == 0 || in_date.getDay() == 6 || (new Date()) > in_date)
+                    return state.not_available
+                
+                for (let i = 0; i < schedules.length; i++) {
+                    const schedule = schedules[i];
+                    date_1 = new Date(schedule.date)
+                    date_2 = new Date(in_date)
+                    if (date_1.getTime() == date_2.getTime()) {
+                        if(schedule.slots == 0) return state.not_available
+                    }
+                }
 
-    //     console.log('{{ (now + day) }}')
+                return state.available
+                
+            },
+            autoclose: true
 
-    //     $('#appointment_date').datepicker({
-    //         dateFormat: 'mm/dd/yy',
-    //         startDate: '{{ now.strftime("%m/%d/%Y") }}',
-    //         endDate: '{{ (now + month).strftime("%m/%d/%Y") }}',
-    //         beforeShowDay: function (in_date) {
-    //             var dmy = (in_date.getMonth() + 1)
-    //             if (in_date.getMonth() < 9) dmy = "0" + dmy
-    //             dmy += "/"
+        })
+        $('#appointment_date').val('')
 
-    //             if (in_date.getDate() < 10) dmy += "0"
-    //             dmy += in_date.getDate() + "/" + in_date.getFullYear()
-
-    //             console.log(dmy + ' : ' + ($.inArray(dmy, availableDates)))
-
-    //             if ($.inArray(dmy, availableDates) > -1) {
-    //                 return [true, "available-date", "Available"]
-    //             } else {
-    //                 return [false, "available-date", "unAvailable"]
-    //             }
-    //         },
-    //         autoclose: true
-    //     })
-
-    // }
+    }
     
 
     function Refresh() {
@@ -135,8 +219,18 @@ Request Appointment
             'status_id'         : $('#status_id').val(),
             'details'           : $('#details').val(),
             'appointment_date'  : $('#appointment_date').val(),
+            'time'              : 0,
             'assigned'          : ''
         }
+
+        if (document.getElementById('09:00AM-10:00AM').checked) data.time = 9
+        if (document.getElementById('10:00AM-11:00AM').checked) data.time = 10
+        if (document.getElementById('11:00AM-12:00NN').checked) data.time = 11
+        if (document.getElementById('01:00PM-02:00PM').checked) data.time = 13
+        if (document.getElementById('02:00PM-03:00PM').checked) data.time = 14
+        if (document.getElementById('03:00PM-04:00PM').checked) data.time = 15
+        if (document.getElementById('04:00PM-05:00PM').checked) data.time = 16
+        if (data.time == 0) data.appointment_date = ''
 
         $('#record_id_error').html('')
         $('#details_error').html('')

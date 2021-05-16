@@ -107,8 +107,7 @@ Medical Record
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label class="form-control-label">Patient</label>
-                                    <input class="form-control" type="text"
-                                        value="{{data.record.account.first_name}} {{data.record.account.last_name}}">
+                                    <input class="form-control" type="text" value="{{data.record.account.first_name}} {{data.record.account.last_name}}">
                                 </div>
                             </div>
                         </div>
@@ -116,8 +115,17 @@ Medical Record
                             <div class="col-md-12">
                                 <div class="form-group">
                                     <label class="form-control-label">Details</label>
-                                    <textarea type="text" class="form-control "
-                                        rows="20">{{ data.record.record_details }}</textarea>
+                                    <textarea type="text" class="form-control" rows="5">{{ data.record.record_details }}</textarea>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label class="form-control-label">Prescriptions</label>
+                                    {% for i in data.record.prescriptions %}
+                                        <input class="form-control mb-2" type="text" value="{{ i[2] }} items of {{ i[1] }}">
+                                    {% endfor %}
                                 </div>
                             </div>
                         </div>

@@ -129,17 +129,17 @@ Appointments
                                     <tbody id="prescriptions_list">
                                         <tr>
                                             <td>
-                                                <select id="prescription_name" name="prescription_name" data-style="bg-white shadow-sm" class="form-control selectpicker show-tick" data-live-search="true" onchange="$('#prescription_quantity').attr('data-item', this.value)">
+                                                <select data-style="bg-white shadow-sm" data-title="Please select an item" class="form-control border border-1 selectpicker show-tick" data-live-search="true" onchange="$('#prescription_quantity').attr('data-item', this.value)">
                                                     {% for item in data.inventories if item.available_items|length > 0 %}
                                                         <option data-subtext="{{ item.available_items|length }} items available" value="{{item.id}}">({{item.item_code}}) {{item.item}}</option>
                                                     {% endfor %}
                                                 </select>
                                             </td>
                                             <td>
-                                                <input id="prescription_quantity" name="prescription_quantity" class="form-control" type="number">
+                                                <input class="form-control" type="number">
                                             </td>
                                             <td class="text-right">
-                                                <button onclick='' class="btn btn-success btn-sm"><i class="fa fa-plus"></i></button>
+                                                <button onclick='AddPrescription(this)' class="btn btn-success btn-sm"><i class="fa fa-plus"></i></button>
                                             </td>
                                         </tr>
                                     </tbody>
@@ -178,21 +178,77 @@ Appointments
         <div class="row">
             <div class="col">
                 <div class="card">
-                    <div class="card-header border-0">
+                    <div class="card-header border-0">                        
                         <div class="row align-items-center">
+                            
                             <div class="col">
+
                                 <form action="/admin/appointment/search" method="post">
+
                                     <input type="hidden" name="csrf_token" value="{{ csrf_token() }}" />
-                                    <input id="date" name="date" type="text"
-                                        class="datepicker form-control form-control-sm  w-25 d-inline-block"
-                                        value="{{data.current_date.strftime('%m/%d/%Y')}}">
-                                    <button class="btn btn-sm btn-success" type="submit">Search</button>
+                                    <!-- <input id="date" name="date" type="text" class="datepicker form-control form-control-sm  w-25 d-inline-block" value="{{data.current_date.strftime('%m/%d/%Y')}}"> -->
+                                    
+                                    <div class="row">
+                                        <div class="input-daterange datepicker col-md-4 row">
+                                            <div class="form-group col">
+                                                <label class="form-control-label">Start Date</label>
+                                                <input name="start_date" class="form-control form-control-sm" placeholder="Start date" type="text" value="{{ now.strftime('%m/%d/%Y') if data.form is none else data.form['start_date'] }}">
+                                            </div>
+                                            <div class="form-group col">
+                                                <label class="form-control-label">End Date</label>
+                                                <input name="end_date" class="form-control form-control-sm" placeholder="End date" type="text" value="{{ now.strftime('%m/%d/%Y') if data.form is none else data.form['end_date'] }}">
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label class="form-control-label">Patient</label>
+                                                <select id="patient" name="patient" data-style="bg-white shadow-sm border border-1"  class="form-control form-control-sm selectpicker" data-live-search="true">
+                                                    <option value="-1" selected hidden>Please Select</option>
+                                                    {% for resident in data.residents %}
+                                                        <option value="{{resident.id}}">{{resident.first_name}} {{resident.last_name}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label class="form-control-label">Service</label>
+                                                <select id="service" name="service" data-style="bg-white shadow-sm border border-1" class="form-control form-control-sm selectpicker" data-live-search="true">
+                                                    <option value="-1" selected hidden>Please Select</option>
+                                                    {% for service in data.services %}
+                                                        <option value="{{service.id}}">{{service.service}}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-2">
+                                            <div class="form-group">
+                                                <label class="form-control-label">Status</label>
+                                                <select id="status" name="status" data-style="bg-white shadow-sm border border-1" class="form-control form-control-sm selectpicker" data-live-search="true">
+                                                    <option value="-1" selected hidden>Please Select</option>
+                                                    {% for status in data.status %}
+                                                        {% if status.id <= 4 %}
+                                                            <option value="{{status.id}}">{{status.status}}</option>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-1 d-flex justify-content-between py-3">
+                                            <button class="btn btn-sm btn-success" type="submit">Start Search</button>
+                                        </div>
+                                    </div>
+
                                 </form>
-                            </div>
-                            <div class="col text-right">
+
                                 <button class="btn btn-sm btn-success" onclick="AddNewAppointment()">Add New</button>
+
+
                             </div>
+
                         </div>
+
+
                     </div>
                 </div>
             </div>
@@ -399,6 +455,71 @@ Appointments
 {% endblock %}
 
 {% block scripts %}
+
+<script>
+
+    var AddPrescription = function(el) {
+
+        body        = el.parentNode.parentNode.parentNode
+        row         = body.children[0]
+
+        item_id     = row.children[0].children[0].children[0].value
+        item_text   = row.children[0].children[0].children[1].title
+        quantity    = row.children[1].children[0].value
+
+        $('#prescriptions_error').html('')
+
+        if (item_id < 1) {
+            $('#prescriptions_error').html(' Please select an item.')
+            return null
+        }
+        if (quantity < 1) {
+            $('#prescriptions_error').html(' Invalid quantity.')
+            return null
+        }
+
+        new_row = row.cloneNode(true)
+        new_row.setAttribute('class', 'prescription_item')
+        new_row.children[0].innerHTML = '<input class="form-control" type="text" value="' + item_id + '" disabled hidden>'+
+                                        '<input class="form-control" type="text" value="' + item_text + '" disabled>' //item
+        new_row.children[1].innerHTML = '<input class="form-control" type="text" value="' + quantity + '" disabled>' //quantity
+        new_row.children[2].innerHTML = '<button onclick="this.parentNode.parentNode.remove()" class="btn btn-danger btn-sm"><i class="fa fa-minus"></i></button>'
+
+        body.appendChild(new_row)
+        
+        $(".selectpicker").selectpicker('deselectAll')
+        $(".selectpicker").selectpicker('val', [])
+        row.children[1].children[0].value = 0
+
+    }
+
+    var ViewPrescription = function(meds) {
+
+        if (meds == null) return null;
+
+        JSON.parse(meds).forEach(med => {
+
+            body        = document.getElementById('prescriptions_list')
+            row         = body.children[0]
+            item_id     = med[0]
+            item_text   = med[1]
+            quantity    = med[2]
+
+            new_row = row.cloneNode(true)
+            new_row.setAttribute('class', 'prescription_item')
+            new_row.children[0].innerHTML = '<input class="form-control" type="text" value="' + item_id + '" disabled hidden>'+
+                                            '<input class="form-control" type="text" value="' + item_text + '" disabled>' //item
+            new_row.children[1].innerHTML = '<input class="form-control" type="text" value="' + quantity + '" disabled>' //quantity
+            new_row.children[2].innerHTML = '<button onclick="this.parentNode.parentNode.remove()" class="btn btn-danger btn-sm"><i class="fa fa-minus"></i></button>'
+
+            body.appendChild(new_row)
+
+        })
+
+    }
+
+</script>
+
 <script>
 
     setSideBar('#menu-appointments')
@@ -415,7 +536,7 @@ Appointments
         $('#status_id_error').html('')
         $('#service_id_error').html('')
 
-        $('#id').val('-1')        
+        $('#id').val('-1')
         $(".selectpicker").selectpicker('deselectAll')
         $(".selectpicker").selectpicker('val', [])
         $('#details').val('')
@@ -438,8 +559,18 @@ Appointments
             'status_id'         : $('#status_id').val(),
             'details'           : $('#details').val(),
             'appointment_date'  : $('#appointment_date').val(),
+            'time'              : 0,
             'assigned'          : ''
         }
+
+        // if (document.getElementById('09:00AM-10:00AM').checked) data.time = 9
+        // if (document.getElementById('10:00AM-11:00AM').checked) data.time = 10
+        // if (document.getElementById('11:00AM-12:00NN').checked) data.time = 11
+        // if (document.getElementById('01:00PM-02:00PM').checked) data.time = 13
+        // if (document.getElementById('02:00PM-03:00PM').checked) data.time = 14
+        // if (document.getElementById('03:00PM-04:00PM').checked) data.time = 15
+        // if (document.getElementById('04:00PM-05:00PM').checked) data.time = 16
+        // if (data.time == 0) data.appointment_date = ''
 
         $('#record_id_error').html('')
         $('#details_error').html('')
@@ -526,23 +657,26 @@ Appointments
     // ===============================
 
     var UpsertRecord = function(appointment_id) {
+        
+        document.querySelectorAll('[class=prescription_item]').forEach(e => e.parentNode.removeChild(e))
 
         $('#prescription_quantity').val('')
         $(".selectpicker").selectpicker('deselectAll')
         $(".selectpicker").selectpicker('val', [])
 
+        $('#prescriptions_error').html('')
         $('#record_number_error').html('')
         $('#record_date_error').html('')
         $('#record_details_error').html('')
 
         Controller.GET('/api/record/get/' + appointment_id, {}).done(function (result) {
 
-            console.log(result)
-
             $('#appointment_id').val(appointment_id)
             $('#record_number').val(result.record_number==null ? appointment_id + "-{{now.month}}{{now.year}}" : result.record_number)
             $('#record_date').val(result.record_date==null ? "{{ data.current_date.strftime('%Y-%m-%dT%H:%M') }}" : result.record_date)
             $('#record_details').html(result.record_details)
+
+            ViewPrescription(result.meds)
 
             $(modal_record).modal({
                 "backdrop": "static",
@@ -556,6 +690,14 @@ Appointments
 
     var SaveRecord = function() {
 
+        meds = []
+        document.querySelectorAll('[class=prescription_item]').forEach(e => {
+            item_id     = e.children[0].children[0].value
+            item_text   = e.children[0].children[1].value
+            quantity    = e.children[1].children[0].value
+            meds.push([item_id, item_text, quantity])
+        })
+
         $('#record_number_error').html('')
         $('#record_date_error').html('')
         $('#record_details_error').html('')
@@ -565,6 +707,7 @@ Appointments
             'record_number'     : $('#record_number').val(),
             'record_date'       : $('#record_date').val(),
             'record_details'    : $('#record_details').val(),
+            'meds'              : JSON.stringify(meds),
             'next_appointments' : null
         }
 

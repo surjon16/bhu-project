@@ -34,12 +34,38 @@ class RecordsRepo:
     
     def upsertRecord(request):
 
+        items = Items.query.all()
+        for i in items:
+            if i.current_status == 7:
+                i.status_id = 7
+        
+        db.session.commit()
+
+        # ==
+
         data = Appointments.query.filter_by(id=request['id']).first()
 
         data.record_number      = request['record_number']    
         data.record_details     = request['record_details']    
         data.record_date        = request['record_date']    
-        data.next_appointments  = request['next_appointments']    
+        data.next_appointments  = request['next_appointments']
+
+        meds = json.loads(request['meds'])
+        if meds is not None:
+            for i in meds:
+                items = Items.query.filter_by(inventory_id=int(i[0]), status_id=5).limit(int(i[2]))
+                for item in items:
+                    item.status_id = 6
+
+
+        if data.meds is not None:
+            _meds = json.loads(data.meds)
+            for i in _meds:
+                items = Items.query.filter_by(inventory_id=int(i[0]), status_id=6).limit(int(i[2]))
+                for item in items:
+                    item.status_id = 5
+
+        data.meds = request['meds']
 
         db.session.commit()
 
@@ -53,6 +79,7 @@ class RecordsRepo:
         data.record_details     = None
         data.record_date        = None
         data.next_appointments  = None
+        data.meds               = None
 
         db.session.commit()
 

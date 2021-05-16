@@ -5,7 +5,7 @@ from sqlalchemy.ext.hybrid  import hybrid_property, hybrid_method
 from sqlalchemy             import select, func
 import re, json
 from werkzeug.security      import generate_password_hash, check_password_hash
-from datetime               import datetime
+from datetime               import datetime, timedelta
 
 class Accounts(UserMixin, db.Model):
 
@@ -54,7 +54,7 @@ class Accounts(UserMixin, db.Model):
         """
         return check_password_hash(self.password_hash, password)
 
-    def __str__(self):
+    def serialize(self):
         return {
             'id'            : self.id,
             'first_name'    : self.first_name,
@@ -98,10 +98,17 @@ class Appointments(db.Model):
     account_id  = db.Column(db.Integer, db.ForeignKey('accounts.id'), nullable=True)
     
     @hybrid_property
+    def schedule(self):
+        return {
+            'date': self.appointment_date.strftime('%m/%d/%Y'), 
+            'time': self.appointment_date.strftime('%I:%M%p') + '-' + (self.appointment_date + timedelta(hours=1)).strftime('%I:%M%p'),
+        }
+
+    @hybrid_property
     def prescriptions(self):
-        return [prescription for prescription in Items.query.all() if prescription.id in [int(item_id) for item_id in json.loads(self.meds)]]
+        return json.loads(self.meds)
     
-    def __str__(self):
+    def serialize(self):
         return {
             'id'                : self.id,
             'details'           : self.details,
@@ -162,7 +169,7 @@ class Inventory(db.Model):
     # def get_item(self, id):
     #     return [data for data in self.items if data.id == id][0]
     
-    def __str__(self):
+    def serialize(self):
         return {
             'id'                : self.id,
             'item_code'         : self.item_code,
@@ -193,7 +200,7 @@ class Items(db.Model):
         else:
             return self.status_id
 
-    def __str__(self):
+    def serialize(self):
         return {
             'id'            : self.id,
             'is_expired'    : self.expiry_date >= datetime.now(),
@@ -214,7 +221,7 @@ class Roles(db.Model):
     # relationship
     accounts_roles = db.relationship('Accounts', backref='role', lazy=True)
 
-    def __str__(self):
+    def serialize(self):
         return {
             'id'            : self.id,
             'role'          : self.role,
@@ -236,7 +243,7 @@ class Services(db.Model):
     # relationship
     appointment_service = db.relationship('Appointments',   backref='service', lazy=True)
 
-    def __str__(self):
+    def serialize(self):
         return {
             'id'            : self.id,
             'service'       : self.service,
@@ -259,7 +266,7 @@ class Status(db.Model):
     appointment_status  = db.relationship('Appointments',   backref='status', lazy=True)
     item_status         = db.relationship('Items',          backref='status', lazy=True)
 
-    def __str__(self):
+    def serialize(self):
         return {
             'id'            : self.id,
             'status'        : self.status,
@@ -281,7 +288,7 @@ class Notifications(db.Model):
     # relationship
     account_id = db.Column(db.Integer, db.ForeignKey('accounts.id'),     nullable=True)
 
-    def __str__(self):
+    def serialize(self):
         return {
             'id'            : self.id,
             'content'       : self.content,
